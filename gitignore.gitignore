@@ -6,6 +6,8 @@
 *.user
 *.sln.docstates
 **/*.vs/**/*
+**/.vs/**/*
+.vs/
 *.vscode/**/*
 
 # Build results
