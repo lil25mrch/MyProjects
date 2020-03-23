@@ -15,14 +15,15 @@ namespace Crawler
         public static void Main(string[] args)
         {
             WebClient client = new WebClient();
+
+            //var domain = "http://www.ellegirl.ru/articles/smi-raskryli-nazvanie-tretei-chasti-cheloveka-pauka-s-tomom-khollandom/";
+            var domain = "https://www.ozon.ru/brand/acuvue-148736994/";
             
-            var domain = "http://www.ellegirl.ru/articles/smi-raskryli-nazvanie-tretei-chasti-cheloveka-pauka-s-tomom-khollandom/";
-            //var domain = "https://www.ozon.ru/brand/acuvue-148736994/";
             Uri uri = new Uri(domain);
             string uriHost = uri.Host.ToString();
-            
+
             //Документ сайта, который мы проверяем
-            string content = client.DownloadString(uri); 
+            string content = client.DownloadString(uri);
             File.WriteAllText(uri.Host + ".txt", content);
             HtmlParser xDoc = new HtmlParser();
             AngleSharp.Html.Dom.IHtmlDocument htmlDocument = xDoc.ParseDocument(content);
@@ -30,11 +31,11 @@ namespace Crawler
             ///////////////////////////////////////////////////////////////////////////////////////////////
             //Документ главной страницы сайта, который мы проверяем
             var uriStart = uri.Scheme.ToString() + "://" + uri.Host.ToString();
-            
+
             Uri uriStartPage = new Uri(uriStart);
             string uriStartPageHost = uri.Host.ToString();
-            
-            string contentStart = client.DownloadString(uriStartPage); 
+
+            string contentStart = client.DownloadString(uriStartPage);
             File.WriteAllText(uriStartPage.Host + "start.txt", contentStart);
             HtmlParser xDocStart = new HtmlParser();
             AngleSharp.Html.Dom.IHtmlDocument htmlDocumentSP = xDocStart.ParseDocument(contentStart);
@@ -48,9 +49,9 @@ namespace Crawler
                 AllaHref++;
             }
             /////////////////////////////////////////////////////////////////////////////////////////////
-           
-            
-            
+
+
+
             //////////////////////////////////////////////////////////////////////////////////////
             //число тегов <img src> 
             int src = 0;
@@ -61,6 +62,7 @@ namespace Crawler
                 srcList.Add(countSrc);
                 src++;
             }
+
             //число тегов <img src>, исключая теги, которые есть на главной странице
             int srcSP = 0;
             foreach (IElement elementSrcSP in htmlDocumentSP.QuerySelectorAll("img"))
@@ -71,12 +73,11 @@ namespace Crawler
                     srcSP++;
                 }
             }
-            
-            int diffSrc = src - srcSP;
-            
-            
+
+
+
             //число стилей "background-image: url" 
-            
+
             /*int bgurl = 0;
             string bgurlReg = contentStart;
             Regex regex = new Regex(@"background-image: url");
@@ -104,20 +105,24 @@ namespace Crawler
                 bgurl++;
             }
             */
-        
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //число внутренних ссылок <a href> у которых вместо анкора <img>
             int aHrefImg = 0;
             HashSet<string> aHrefImgList = new HashSet<string>();
-            foreach (IElement elementaHrefImg in htmlDocument.QuerySelectorAll("a"))
+             foreach (IElement elementaHrefImg in htmlDocument.QuerySelectorAll("a"))
             {
                 string countaHrefImg = elementaHrefImg.GetAttribute("href");
-                if ((countaHrefImg.StartsWith("/") || countaHrefImg.StartsWith(uriHost)) && countaHrefImg.Contains("img"))
+                if (string.IsNullOrWhiteSpace(countaHrefImg))
+                {
+                    continue;
+                }
+                if ((countaHrefImg.StartsWith("/") || countaHrefImg.Contains(uriHost)) && countaHrefImg.Contains("img"))
                 {
                     aHrefImg++;
                     aHrefImgList.Add(countaHrefImg);
                 }
             }
-            
+
             int aHrefImgSP = 0;
             foreach (IElement elementaHrefSP in htmlDocumentSP.QuerySelectorAll("a"))
             {
@@ -127,25 +132,24 @@ namespace Crawler
                     aHrefImgSP++;
                 }
             }
-            
-            int DiffaHrefImg = aHrefImg - aHrefImgSP;
-  
-            
-           
-            
-            
-            
-           
+
             //Общее число внутренних ссылок на странице 
-            //Общее число уникальны внутренних ссылок на странице (по URL)
+            //Общее число уникальных внутренних ссылок на странице (по URL)
+            
             int aInSite = 0;
             int aMoreOne = 0;
-            HashSet<string> UniclistAInSyte = new HashSet<string>();
-            HashSet<string> listAInSyte = new HashSet<string>();
+           
             
+            HashSet<string> UniclistAInSyte = new HashSet<string>();
+            HashSet<string> CloneAInSyte = new HashSet<string>();
+
             foreach (IElement elementaInSite in htmlDocument.QuerySelectorAll("a"))
             {
                 string countaHrefImg = elementaInSite.GetAttribute("href");
+                if (string.IsNullOrWhiteSpace(countaHrefImg))
+                {
+                    continue;
+                }
                 if (countaHrefImg.StartsWith("/") || countaHrefImg.Contains(uriHost))
                 {
                     aInSite++;
@@ -153,15 +157,25 @@ namespace Crawler
                     {
                         UniclistAInSyte.Add(countaHrefImg);
                     }
-                    else 
+                    else
                     {
-                        listAInSyte.Add(countaHrefImg);
+                        CloneAInSyte.Add(countaHrefImg); //Число внутренних ссылок, которые на странице встречаются более 1 раза(по URL)
+                        aMoreOne++;
                     }
-                    
                 }
             }
-            
 
+
+            //Число внутренних ссылок, которые на странице встречаются более 1 раза (в связке URL+анкор)
+            
+            
+       
+
+
+           
+           
+           
+           
             //Значение параметра <html lang="">, или пометка об его отсутствии
             foreach (IElement elementHtmlLang in htmlDocument.QuerySelectorAll("html"))
             {
@@ -185,7 +199,7 @@ namespace Crawler
                 TitleLength += countTitle.Length;
                 title++;
             }
-            
+
             //средняя длина значения атрибутов title на странице
             decimal avlTitle = TitleLength / title;
             Console.WriteLine(Math.Ceiling(avlTitle));
@@ -198,30 +212,76 @@ namespace Crawler
             aforMessag("vk", htmlDocument);
             aforMessag("google", htmlDocument);
 
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            //число заголовков h2-h6 (отдельно)
-            countHNumforMessage("h2", htmlDocument);
-            countHNumforMessage("h3", htmlDocument);
-            countHNumforMessage("h4", htmlDocument);
-            countHNumforMessage("h5", htmlDocument);
-            countHNumforMessage("h6", htmlDocument);
 
+            //общее количество атрибутов table на странице
+            int table = 0;
+            HashSet<string> listTable = new HashSet<string>();
+            foreach (IElement elementTable in htmlDocument.QuerySelectorAll("[table]"))
+            {
+                string countTable = elementTable.GetAttribute("table");
+                listTable.Add(countTable);
+                table++;
+            }
+
+            int tableSP = 0;
+            foreach (IElement elementTableSP in htmlDocumentSP.QuerySelectorAll("[table]"))
+            {
+                string countTableSP = elementTableSP.GetAttribute("table");
+                if (listTable.Contains(countTableSP))
+                {
+                    tableSP++;
+                }
+            }
+            
+            
+
+
+
+
+
+
+
+
+
+
+            //число заголовков h2-h6 (отдельно)
+            int h2Count = countHNumforMessage("h2", htmlDocument);
+            int h3Count = countHNumforMessage("h3", htmlDocument);
+            int h4Count = countHNumforMessage("h4", htmlDocument);
+            int h5Count = countHNumforMessage("h5", htmlDocument);
+            int h6Count = countHNumforMessage("h6", htmlDocument);
+
+            Console.WriteLine("Количество заголовков h2 равно {0}", h2Count);
+            Console.WriteLine("Количество заголовков h3 равно {0}", h3Count);
+            Console.WriteLine("Количество заголовков h4 равно {0}", h4Count);
+            Console.WriteLine("Количество заголовков h5 равно {0}", h5Count);
+            Console.WriteLine("Количество заголовков h6 равно {0}", h6Count);
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////// START
 
-          
+
+
+            if (domain != uriStart)
+            {
+                int diffSrc = src - srcSP; //число тегов <img src>	
+                //число стилей "background-image: url" 
+                /*
+                int diffh2Count = h2Count - h2CountSR;         //число заголовков h2-h6 (отдельно)
+                int diffh3Count = h3Count - h3CountSR;
+                int diffh4Count = h4Count - h4CountSR;
+                int diffh5Count = h5Count - h5CountSR;
+                int diffh6Count = h6Count - h6CountSR;
+                */
+
+                int diffAHrefImg = aHrefImg - aHrefImgSP; //число внутренних ссылок <a href> у которых вместо анкора <img>
+                int diffTable = table - tableSP; //Число тегов table на странице, исключая число table на главной странице
+                
+                
+                Console.WriteLine(diffTable);
+
+            }
+
+
+
 
 
 
@@ -231,9 +291,9 @@ namespace Crawler
             Console.WriteLine("Count img src = {0}", src);
             //Console.WriteLine("Count background-image: url = {0}", bgurl);
             Console.WriteLine("Count a href у которых вместо анкора img = {0}", aHrefImg);
-            Console.WriteLine("Count a href у которых только внутренние ссылки = {0}", aInSite);
+            Console.WriteLine("Общее число внутренних ссылок на странице = {0}", aInSite);
             Console.WriteLine("Количество уникальных внутренних ссылок на странице: {0}", UniclistAInSyte.Count);
-            Console.WriteLine("Количество внутренних ссылок, встречающихся более 1 раза на странице: {0}", listAInSyte.Count);
+            Console.WriteLine("Количество внутренних ссылок, встречающихся более 1 раза на странице: {0}", CloneAInSyte.Count);
             Console.WriteLine("Count title = {0}", title);
 
             Console.Read();
@@ -248,6 +308,10 @@ namespace Crawler
             foreach (IElement elementNameSS in list)
             {
                 string countNameSS = elementNameSS.GetAttribute("href");
+                if (string.IsNullOrWhiteSpace(countNameSS))
+                {
+                    continue;
+                }
                 if (countNameSS.Contains(name))
                 {
                     links.Add(countNameSS);
@@ -265,25 +329,18 @@ namespace Crawler
 
         }
 
-        private static void countHNumforMessage(string tagname, AngleSharp.Html.Dom.IHtmlDocument htmlDocument)
+        private static int countHNumforMessage(string tagname, AngleSharp.Html.Dom.IHtmlDocument htmlDocument)
         {
             int countHNum = 0;
+            
             foreach (IElement elementcountHNum in htmlDocument.QuerySelectorAll(tagname))
             {
                 countHNum++;
             }
 
-            Console.WriteLine("Количество заголовков " + tagname + " равно {0}", countHNum);
+            return countHNum;
         }
-
-
-
-
-
-
-
-
-
     }
     
 }
+    
