@@ -7,8 +7,7 @@ namespace Краулер.Helpers {
 
         public string GetContent(string domain) {
             Uri uri = new Uri(domain);
-
-            //Документ сайта, который мы проверяем
+            
             string content = _client.DownloadString(uri);
             return content;
         }

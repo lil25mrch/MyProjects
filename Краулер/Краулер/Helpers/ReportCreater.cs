@@ -38,25 +38,12 @@ namespace Краулер.Helpers {
                 AllaHref++;
             }
             /////////////////////////////////////////////////////////////////////////////////////////////
-
+            var srcImg = _htmlDocumentParser.TagCount("img", "src", htmlDocument, htmlDocumentSP);
+            
+            
+            
             //////////////////////////////////////////////////////////////////////////////////////
-            //число тегов <img src> 
-            int src = 0;
-            HashSet<string> srcList = new HashSet<string>();
-            foreach (IElement elementSrc in htmlDocument.QuerySelectorAll("img")) {
-                string countSrc = elementSrc.GetAttribute("src");
-                srcList.Add(countSrc);
-                src++;
-            }
-
-            //число тегов <img src>, исключая теги, которые есть на главной странице
-            int srcSP = 0;
-            foreach (IElement elementSrcSP in htmlDocumentSP.QuerySelectorAll("img")) {
-                string countSrc = elementSrcSP.GetAttribute("src");
-                if (srcList.Contains(countSrc)) {
-                    srcSP++;
-                }
-            }
+           
 
             //число стилей "background-image: url" 
 
@@ -202,12 +189,12 @@ namespace Краулер.Helpers {
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////// START
 
             if (domain != uriStart) {
-                int diffSrc = src - srcSP; //число тегов <img src>	
+                //int diffSrc = src - srcSP; //число тегов <img src>	
                 //число стилей "background-image: url" 
                 /*
                 int diffh2Count = h2Count - h2CountSR;         //число заголовков h2-h6 (отдельно)
                 int diffh3Count = h3Count - h3CountSR;
-                int diffh4Count = h4Count - h4CountSR;
+                int diffh4Count = h4Count - h/4CountSR;
                 int diffh5Count = h5Count - h5CountSR;
                 int diffh6Count = h6Count - h6CountSR;
                 */
@@ -219,7 +206,7 @@ namespace Краулер.Helpers {
             }
 
             Console.WriteLine("Count all a href = {0}", AllaHref);
-            Console.WriteLine("Count img src = {0}", src);
+            
             //Console.WriteLine("Count background-image: url = {0}", bgurl);
             Console.WriteLine("Count a href у которых вместо анкора img = {0}", aHrefImg);
             Console.WriteLine("Общее число внутренних ссылок на странице = {0}", aInSite);
@@ -227,6 +214,26 @@ namespace Краулер.Helpers {
             Console.WriteLine("Количество внутренних ссылок, встречающихся более 1 раза на странице: {0}", CloneAInSyte.Count);
             Console.WriteLine("Count title = {0}", title);
 
+            /*
+            Dictionary<string, int> dictionary = new Dictionary<string, int>();
+            dictionary.Add("number of tags <img src> = ", src);
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            dictionary.Add("", );
+            */
+            
             Console.Read();
         }
     }
