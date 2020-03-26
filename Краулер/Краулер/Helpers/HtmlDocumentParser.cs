@@ -44,8 +44,7 @@ namespace Краулер.Helpers {
 
             return diff; 
         }
-
-        ///////////////////////////////////////////////////////////////////////////////
+        
         public int TagCount(string selector,
                             string attribute,
                             IHtmlDocument htmlDoc) {
