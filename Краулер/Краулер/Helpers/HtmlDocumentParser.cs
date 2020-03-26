@@ -31,8 +31,8 @@ namespace Краулер.Helpers {
                 }
 
                 diff = tag - tagSP;
-                return diff; } 
-            else {
+                return diff;
+            } else {
                 int tag = 0;
                 foreach (IElement element in htmlDoc.QuerySelectorAll(selector)) {
                     string count = element.GetAttribute(attribute);
@@ -42,12 +42,10 @@ namespace Краулер.Helpers {
                 diff = tag;
             }
 
-            return diff; 
+            return diff;
         }
-        
-        public int TagCount(string selector,
-                            string attribute,
-                            IHtmlDocument htmlDoc) {
+
+        public int TagCount(string selector, string attribute, IHtmlDocument htmlDoc) {
             int tag = 0;
             foreach (IElement element in htmlDoc.QuerySelectorAll(selector)) {
                 string count = element.GetAttribute(attribute);
@@ -57,9 +55,9 @@ namespace Краулер.Helpers {
             return tag;
         }
 
-        public int RegulStyle(string searchTense, IHtmlDocument htmlDoc, string content) {
-            Regex regex = new Regex($@"background-image:(\s*)url");
-            MatchCollection matches = regex.Matches(content);
+        public int RegulStyle(string searchTense, string cont) {
+            Regex regex = new Regex(searchTense);
+            MatchCollection matches = regex.Matches(cont);
             return matches.Count;
         }
 
@@ -89,7 +87,8 @@ namespace Краулер.Helpers {
             return "";
         }
 
-        public void LinksOnPage(string name, IHtmlDocument htmlDocument) {
+        public string LinksOnPage(string name, IHtmlDocument htmlDocument) {
+            string answer;
             IHtmlCollection<IElement> list = htmlDocument.QuerySelectorAll("a");
 
             HashSet<string> links = new HashSet<string>();
@@ -106,15 +105,104 @@ namespace Краулер.Helpers {
             }
 
             if (links.Count > 0) {
-                Console.WriteLine("this tag is here: {0}", name);
+                answer = "this tag is here";
             } else {
-                Console.WriteLine("This tag is not here: {0}", name);
+                answer = "this tag is not here";
             }
+
+            return answer;
         }
 
-        public int CountHNumforMessage(string tagname, IHtmlDocument htmlDoc) {
-            int countHNum = htmlDoc.QuerySelectorAll(tagname).Length;
-            return countHNum;
+        public int InterLinkHasSmth(string smth, IHtmlDocument htmlDoc, string uriHost) {
+            HashSet<string> list = new HashSet<string>();
+            foreach (IElement element in htmlDoc.QuerySelectorAll("a")) {
+                string count = element.GetAttribute("href");
+                if (string.IsNullOrWhiteSpace(count)) {
+                    continue;
+                }
+
+                if ((count.StartsWith("/") || count.Contains(uriHost)) && count.Contains(smth)) {
+                    list.Add(count);
+                }
+            }
+
+            return list.Count;
+        }
+
+        public int InterLinkHasSmthDiff(string smth,
+                                        string uriHost,
+                                        IHtmlDocument htmlDoc,
+                                        IHtmlDocument htmlDocSP,
+                                        string contentS,
+                                        string contentM) {
+            int diff;
+            HashSet<string> list = new HashSet<string>();
+            HashSet<string> listSP = new HashSet<string>();
+            if (contentM != contentS) {
+                foreach (IElement element in htmlDoc.QuerySelectorAll("a")) {
+                    string count = element.GetAttribute("href");
+                    if (string.IsNullOrWhiteSpace(count)) {
+                        continue;
+                    }
+
+                    if ((count.StartsWith("/") || count.Contains(uriHost)) && count.Contains(smth)) {
+                        list.Add(count);
+                    }
+                }
+
+                foreach (IElement element in htmlDocSP.QuerySelectorAll("a")) {
+                    string countSP = element.GetAttribute("href");
+                    if (list.Contains(countSP)) {
+                        listSP.Add(countSP);
+                    }
+                }
+
+                diff = list.Count - listSP.Count;
+                return diff;
+            } else {
+                diff = list.Count;
+            }
+
+            return diff;
+        }
+
+        public int UniqInterLink(IHtmlDocument htmlDoc, string uriHost) {
+            HashSet<string> list = new HashSet<string>();
+            foreach (IElement element in htmlDoc.QuerySelectorAll("a")) {
+                string count = element.GetAttribute("href");
+                if (string.IsNullOrWhiteSpace(count)) {
+                    continue;
+                }
+
+                if (count.StartsWith("/") || count.Contains(uriHost)) {
+                    if (list.Contains(count) != true) {
+                        list.Add(count);
+                    } 
+                }
+            }
+            return list.Count;
+        }
+        
+        public int NotUniqInterLink(IHtmlDocument htmlDoc, string uriHost) {
+            HashSet<string> list = new HashSet<string>();
+            HashSet<string> notUniqList = new HashSet<string>();
+            foreach (IElement element in htmlDoc.QuerySelectorAll("a")) {
+                string count = element.GetAttribute("href");
+                if (string.IsNullOrWhiteSpace(count)) {
+                    continue;
+                }
+
+                if (count.StartsWith("/") || count.Contains(uriHost)) {
+                    if (list.Contains(count) != true) {
+                        list.Add(count);
+                    } else {
+                        notUniqList.Add(count);
+                    }
+                }
+            }
+            return notUniqList.Count;
         }
     }
 }
+
+
