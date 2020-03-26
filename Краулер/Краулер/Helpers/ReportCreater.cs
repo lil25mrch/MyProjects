@@ -38,8 +38,7 @@ namespace Краулер.Helpers {
                 AllaHref++;
             }
             /////////////////////////////////////////////////////////////////////////////////////////////
-            var srcImg = _htmlDocumentParser.TagCount("img", "src", htmlDocument, htmlDocumentSP);
-            
+           
             
             
             //////////////////////////////////////////////////////////////////////////////////////
@@ -149,43 +148,9 @@ namespace Краулер.Helpers {
             decimal avlTitle = TitleLength / title;
             Console.WriteLine(Math.Ceiling(avlTitle));
 
-            //наличие ссылки на каждую из указанных соцсетей
-            _htmlDocumentParser.LinksForMessag("instagram", htmlDocument);
-            _htmlDocumentParser.LinksForMessag("twitter", htmlDocument);
-            _htmlDocumentParser.LinksForMessag("facebook", htmlDocument);
-            _htmlDocumentParser.LinksForMessag("youtube", htmlDocument);
-            _htmlDocumentParser.LinksForMessag("vk", htmlDocument);
-            _htmlDocumentParser.LinksForMessag("google", htmlDocument);
+         
+            
 
-            //общее количество атрибутов table на странице
-            int table = 0;
-            HashSet<string> listTable = new HashSet<string>();
-            foreach (IElement elementTable in htmlDocument.QuerySelectorAll("[table]")) {
-                string countTable = elementTable.GetAttribute("table");
-                listTable.Add(countTable);
-                table++;
-            }
-
-            int tableSP = 0;
-            foreach (IElement elementTableSP in htmlDocumentSP.QuerySelectorAll("[table]")) {
-                string countTableSP = elementTableSP.GetAttribute("table");
-                if (listTable.Contains(countTableSP)) {
-                    tableSP++;
-                }
-            }
-
-            //число заголовков h2-h6 (отдельно)
-            int h2Count = _htmlDocumentParser.CountHNumforMessage("h2", htmlDocument);
-            int h3Count = _htmlDocumentParser.CountHNumforMessage("h3", htmlDocument);
-            int h4Count = _htmlDocumentParser.CountHNumforMessage("h4", htmlDocument);
-            int h5Count = _htmlDocumentParser.CountHNumforMessage("h5", htmlDocument);
-            int h6Count = _htmlDocumentParser.CountHNumforMessage("h6", htmlDocument);
-
-            Console.WriteLine("Количество заголовков h2 равно {0}", h2Count);
-            Console.WriteLine("Количество заголовков h3 равно {0}", h3Count);
-            Console.WriteLine("Количество заголовков h4 равно {0}", h4Count);
-            Console.WriteLine("Количество заголовков h5 равно {0}", h5Count);
-            Console.WriteLine("Количество заголовков h6 равно {0}", h6Count);
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////// START
 
             if (domain != uriStart) {
@@ -200,23 +165,41 @@ namespace Краулер.Helpers {
                 */
 
                 int diffAHrefImg = aHrefImg - aHrefImgSP; //число внутренних ссылок <a href> у которых вместо анкора <img>
-                int diffTable = table - tableSP; //Число тегов table на странице, исключая число table на главной странице
-
-                Console.WriteLine(diffTable);
+                //int diffTable = table - tableSP; //Число тегов table на странице, исключая число table на главной странице
+                
             }
 
-            Console.WriteLine("Count all a href = {0}", AllaHref);
             
-            //Console.WriteLine("Count background-image: url = {0}", bgurl);
-            Console.WriteLine("Count a href у которых вместо анкора img = {0}", aHrefImg);
-            Console.WriteLine("Общее число внутренних ссылок на странице = {0}", aInSite);
-            Console.WriteLine("Количество уникальных внутренних ссылок на странице: {0}", UniclistAInSyte.Count);
-            Console.WriteLine("Количество внутренних ссылок, встречающихся более 1 раза на странице: {0}", CloneAInSyte.Count);
-            Console.WriteLine("Count title = {0}", title);
+            var srcImg = _htmlDocumentParser.TagCount("img", "src", htmlDocument, htmlDocumentSP);
+           
+            int h2Count = _htmlDocumentParser.CountHNumforMessage("h2", htmlDocument);
+            int h3Count = _htmlDocumentParser.CountHNumforMessage("h3", htmlDocument);
+            int h4Count = _htmlDocumentParser.CountHNumforMessage("h4", htmlDocument);
+            int h5Count = _htmlDocumentParser.CountHNumforMessage("h5", htmlDocument);
+            int h6Count = _htmlDocumentParser.CountHNumforMessage("h6", htmlDocument);
+            
+            var table = _htmlDocumentParser.TagCount("[table]", "table", htmlDocument, htmlDocumentSP);
 
-            /*
-            Dictionary<string, int> dictionary = new Dictionary<string, int>();
-            dictionary.Add("number of tags <img src> = ", src);
+            var htmlLang = _htmlDocumentParser.HtmlLangSearch("html", "xml:lang", htmlDocument);
+
+            _htmlDocumentParser.LinksForMessag("instagram", htmlDocument);
+            _htmlDocumentParser.LinksForMessag("twitter", htmlDocument);
+            _htmlDocumentParser.LinksForMessag("facebook", htmlDocument);
+            _htmlDocumentParser.LinksForMessag("youtube", htmlDocument);
+            _htmlDocumentParser.LinksForMessag("vk", htmlDocument);
+            _htmlDocumentParser.LinksForMessag("google", htmlDocument);
+            
+            Dictionary<string, dynamic> dictionary = new Dictionary<string, dynamic>();
+            dictionary.Add("number of tags <img src> = ", srcImg);
+            //dictionary.Add("tag <img src> difference between start page and main page", );
+            dictionary.Add("", );
+            dictionary.Add("The number of h2 headers on the start page is", h2Count);
+            dictionary.Add("The number of h3 headers on the start page is", h3Count);
+            dictionary.Add("The number of h4 headers on the start page is", h4Count);
+            dictionary.Add("The number of h5 headers on the start page is", h5Count);
+            dictionary.Add("The number of h6 headers on the start page is", h6Count);
+            dictionary.Add("The value of <html lang> is", htmlLang);
+            dictionary.Add(" ", );
             dictionary.Add("", );
             dictionary.Add("", );
             dictionary.Add("", );
@@ -224,15 +207,9 @@ namespace Краулер.Helpers {
             dictionary.Add("", );
             dictionary.Add("", );
             dictionary.Add("", );
-            dictionary.Add("", );
-            dictionary.Add("", );
-            dictionary.Add("", );
-            dictionary.Add("", );
-            dictionary.Add("", );
-            dictionary.Add("", );
-            dictionary.Add("", );
-            dictionary.Add("", );
-            */
+       
+            
+            
             
             Console.Read();
         }
