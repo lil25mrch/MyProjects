@@ -1,58 +1,59 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 
 namespace Краулер.Helpers {
     public class HtmlDocumentParser {
-        public int TagDiff(string selector,
-                           string attribute,
-                           IHtmlDocument htmlDoc,
-                           IHtmlDocument htmlDocSP,
-                           string contentS,
-                           string contentM) {
-            int diff;
-            if (contentM != contentS) {
-                int tag = 0;
-                HashSet<string> list = new HashSet<string>();
-                foreach (IElement element in htmlDoc.QuerySelectorAll(selector)) {
-                    string count = element.GetAttribute(attribute);
-                    list.Add(count);
-                    tag++;
-                }
+        public List<string> GetListAttributeWithSelector(string selecror, string attribute, IHtmlDocument htmlDoc) {
+            List<string> list = new List<string>();
+            foreach (IElement element in htmlDoc.QuerySelectorAll(selecror)) {
+                string value = element.GetAttribute(attribute);
+                list.Add(value);
+            }
 
-                int tagSP = 0;
-                foreach (IElement element in htmlDocSP.QuerySelectorAll(selector)) {
-                    string countSP = element.GetAttribute(attribute);
-                    if (list.Contains(countSP)) {
-                        tagSP++;
+            return list;
+        }
+
+        public int Count(string selector, string attribute, IHtmlDocument htmlDoc) {
+            int count = GetListAttributeWithSelector(selector, attribute, htmlDoc).Count;
+
+            return count;
+        }
+
+        public int CountDiff(string selector,
+                             string attribute,
+                             IHtmlDocument htmlDoc,
+                             IHtmlDocument htmlDocSP,
+                             string contentS,
+                             string contentM) {
+            int diff;
+            List<string> listStartPage = GetListAttributeWithSelector(selector, attribute, htmlDoc);
+            if (contentM != contentS) {
+                List<string> listMainPage = GetListAttributeWithSelector(selector, attribute, htmlDocSP);
+                List<string> listDiff = new List<string>();
+                foreach (var element in listMainPage) {
+                    if (listStartPage.Contains(element)) {
+                        listDiff.Add(element);
                     }
                 }
 
-                diff = tag - tagSP;
+                diff = listStartPage.Count - listDiff.Count;
                 return diff;
             } else {
-                int tag = 0;
-                foreach (IElement element in htmlDoc.QuerySelectorAll(selector)) {
-                    string count = element.GetAttribute(attribute);
-                    tag++;
-                }
-
-                diff = tag;
+                diff = listStartPage.Count;
             }
 
             return diff;
         }
 
-        public int TagCount(string selector, string attribute, IHtmlDocument htmlDoc) {
-            int tag = 0;
-            foreach (IElement element in htmlDoc.QuerySelectorAll(selector)) {
-                string count = element.GetAttribute(attribute);
-                tag++;
-            }
+        public int AverageValue(string selector, string attribute, IHtmlDocument htmlDoc) {
+            List<string> list = GetListAttributeWithSelector(selector, attribute, htmlDoc);
+            int averageValue = (int) Math.Round(list.Select(e => e.Length).Average());
 
-            return tag;
+            return averageValue;
         }
 
         public int RegulStyle(string searchTense, string cont) {
@@ -61,104 +62,88 @@ namespace Краулер.Helpers {
             return matches.Count;
         }
 
-        public int AverageValue(string selector, string attribute, IHtmlDocument htmlDoc) {
-            int tagLenght = 0;
-            int tagCount = 0;
-            foreach (IElement element in htmlDoc.QuerySelectorAll(selector)) {
-                string count = element.GetAttribute(attribute);
-                tagLenght += count.Length;
-                tagCount++;
-            }
-
-            decimal avlTag = tagLenght / tagCount;
-            return (int) Math.Round(avlTag);
-        }
-
-        public string HtmlLangSearch(string selector, string attribute, IHtmlDocument htmlDoc) {
-            foreach (IElement elementHtmlLang in htmlDoc.QuerySelectorAll("html")) {
-                string countHtmlLang = elementHtmlLang.GetAttribute("xml:lang");
-                if (countHtmlLang == null) {
+        public string FindAttributeValue(string selector, string attribute, IHtmlDocument htmlDoc) {
+            List<string> list = GetListAttributeWithSelector(selector, attribute, htmlDoc);
+            foreach (var element in list) {
+                if (element == null) {
                     return "missing";
                 } else {
-                    return countHtmlLang;
+                    return element;
                 }
             }
 
             return "";
         }
 
-        public string LinksOnPage(string name, IHtmlDocument htmlDocument) {
+        public List<string> GetInternalLinksList(IHtmlDocument htmlDoc, string uriHost) {
+            List<string> list = GetListAttributeWithSelector("a", "href", htmlDoc);
+
+            List<string> links = list.Where(e => !string.IsNullOrWhiteSpace(e) && (e.Contains(uriHost) || e.StartsWith("/"))).ToList();
+            return links;
+        }
+
+        public int CountInternalLinks(IHtmlDocument htmlDoc, string uriHost) {
             string answer;
-            IHtmlCollection<IElement> list = htmlDocument.QuerySelectorAll("a");
+            List<string> list = GetInternalLinksList(htmlDoc, uriHost);
 
-            HashSet<string> links = new HashSet<string>();
+            return list.Count;
+        }
 
-            foreach (IElement elementNameSS in list) {
-                string countNameSS = elementNameSS.GetAttribute("href");
-                if (string.IsNullOrWhiteSpace(countNameSS)) {
-                    continue;
-                }
+        public string FindSpecificLink(string selector,
+                                       string attribute,
+                                       string name,
+                                       IHtmlDocument htmlDoc) {
+            string answer;
+            List<string> list = GetListAttributeWithSelector(selector, attribute, htmlDoc);
 
-                if (countNameSS.Contains(name)) {
-                    links.Add(countNameSS);
-                }
-            }
+            List<string> links = list.Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains(name)).ToList();
 
             if (links.Count > 0) {
-                answer = "this tag is here";
+                answer = "this link is here";
             } else {
-                answer = "this tag is not here";
+                answer = "this link is not here";
             }
 
             return answer;
         }
 
-        public int InterLinkHasSmth(string smth, IHtmlDocument htmlDoc, string uriHost) {
-            HashSet<string> list = new HashSet<string>();
-            foreach (IElement element in htmlDoc.QuerySelectorAll("a")) {
-                string count = element.GetAttribute("href");
-                if (string.IsNullOrWhiteSpace(count)) {
-                    continue;
-                }
+        public List<string> GetSpecificLinkList(string selector,
+                                                string attribute,
+                                                string name,
+                                                IHtmlDocument htmlDoc) {
+            List<string> list = GetListAttributeWithSelector(selector, attribute, htmlDoc);
 
-                if ((count.StartsWith("/") || count.Contains(uriHost)) && count.Contains(smth)) {
-                    list.Add(count);
-                }
-            }
+            List<string> links = list.Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains(name)).ToList();
 
-            return list.Count;
+            return links;
         }
 
-        public int InterLinkHasSmthDiff(string smth,
-                                        string uriHost,
-                                        IHtmlDocument htmlDoc,
-                                        IHtmlDocument htmlDocSP,
-                                        string contentS,
-                                        string contentM) {
+        public int CountSpecificLink(string selector,
+                                     string attribute,
+                                     string name,
+                                     IHtmlDocument htmlDoc) {
+            List<string> list = GetSpecificLinkList(selector, attribute, name, htmlDoc);
+
+            List<string> links = list.Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains(name)).ToList();
+
+            return links.Count;
+        }
+
+        public int CountSpecificLinkDiff(string selector,
+                                         string attribute,
+                                         string name,
+                                         IHtmlDocument htmlDoc,
+                                         IHtmlDocument htmlDocMainPage,
+                                         string contentStartPage,
+                                         string contentMainPage) {
             int diff;
-            HashSet<string> list = new HashSet<string>();
-            HashSet<string> listSP = new HashSet<string>();
-            if (contentM != contentS) {
-                foreach (IElement element in htmlDoc.QuerySelectorAll("a")) {
-                    string count = element.GetAttribute("href");
-                    if (string.IsNullOrWhiteSpace(count)) {
-                        continue;
-                    }
+            List<string> list = GetSpecificLinkList(selector, attribute, name, htmlDoc);
 
-                    if ((count.StartsWith("/") || count.Contains(uriHost)) && count.Contains(smth)) {
-                        list.Add(count);
-                    }
-                }
+            if (contentMainPage != contentStartPage) {
+                List<string> listMainPage = GetSpecificLinkList(selector, attribute, name, htmlDocMainPage);
+                List<string> diffList = listMainPage.Where(e => list.Contains(e)).ToList();
 
-                foreach (IElement element in htmlDocSP.QuerySelectorAll("a")) {
-                    string countSP = element.GetAttribute("href");
-                    if (list.Contains(countSP)) {
-                        listSP.Add(countSP);
-                    }
-                }
-
-                diff = list.Count - listSP.Count;
-                return diff;
+                diff = list.Count - diffList.Count;
             } else {
                 diff = list.Count;
             }
@@ -166,43 +151,27 @@ namespace Краулер.Helpers {
             return diff;
         }
 
-        public int UniqInterLink(IHtmlDocument htmlDoc, string uriHost) {
-            HashSet<string> list = new HashSet<string>();
-            foreach (IElement element in htmlDoc.QuerySelectorAll("a")) {
-                string count = element.GetAttribute("href");
-                if (string.IsNullOrWhiteSpace(count)) {
-                    continue;
-                }
+        public int FindSpecificInternalLink(string name, IHtmlDocument htmlDoc, string uriHost) {
+            List<string> list = GetInternalLinksList(htmlDoc, uriHost);
+            List<string> links = list.Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains(name)).ToList();
 
-                if (count.StartsWith("/") || count.Contains(uriHost)) {
-                    if (list.Contains(count) != true) {
-                        list.Add(count);
-                    } 
-                }
-            }
-            return list.Count;
+            return links.Count;
         }
-        
-        public int NotUniqInterLink(IHtmlDocument htmlDoc, string uriHost) {
-            HashSet<string> list = new HashSet<string>();
-            HashSet<string> notUniqList = new HashSet<string>();
-            foreach (IElement element in htmlDoc.QuerySelectorAll("a")) {
-                string count = element.GetAttribute("href");
-                if (string.IsNullOrWhiteSpace(count)) {
-                    continue;
-                }
 
-                if (count.StartsWith("/") || count.Contains(uriHost)) {
-                    if (list.Contains(count) != true) {
-                        list.Add(count);
-                    } else {
-                        notUniqList.Add(count);
-                    }
-                }
-            }
-            return notUniqList.Count;
+        public int UniqueInternalLinks(IHtmlDocument htmlDoc, string uriHost) {
+            List<string> list = GetInternalLinksList(htmlDoc, uriHost);
+
+            HashSet<string> uniqueList = list.Where(e => list.Contains(e)).ToHashSet();
+
+            return uniqueList.Count;
+        }
+
+        public int NonUniqueInternalLinks(IHtmlDocument htmlDoc, string uriHost) {
+            List<string> list = GetInternalLinksList(htmlDoc, uriHost);
+
+            int nonUniqueList = list.Count - UniqueInternalLinks(htmlDoc, uriHost);
+
+            return nonUniqueList;
         }
     }
 }
-
-
