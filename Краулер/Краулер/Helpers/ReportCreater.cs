@@ -47,15 +47,15 @@ namespace Краулер.Helpers {
             var linkWithAncorImg = _htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocument)
                 .Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains("img"))
                 .ToList();
+            
+            var listInternalLinks = links.Where(e => !string.IsNullOrWhiteSpace(e) && (e.Contains(uriHost) || e.StartsWith("/"))).ToList();
+      
+            var uniqueInternalLinks = listInternalLinks.ToHashSet();
+            var nonUniqueInternalLinks = listInternalLinks.Count - uniqueInternalLinks.Count;
+            
+            var htmlLang = _htmlDocumentParser.GetListAttributesFromSelector("html", "xml:lang", htmlDocument).ToList().FirstOrDefault() ?? "missing";
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //TODO
-            var countInternalLinks = _htmlDocumentParser.CountInternalLinks(htmlDocument, uriHost);
-
-            var notUnicLink = _htmlDocumentParser.NonUniqueInternalLinks(htmlDocument, uriHost);
-            var uniqIntLink = _htmlDocumentParser.UniqueInternalLinks(htmlDocument, uriHost);
-
-            //var htmlLang = _htmlDocumentParser.GetListAttributesFromSelector("html", "xml:lang", htmlDocument).ToList();
-
             string instagram = _htmlDocumentParser.FindSpecificLink("a", "href", "instagram", htmlDocument);
             string twitter = _htmlDocumentParser.FindSpecificLink("a", "href", "twitter", htmlDocument);
             string facebook = _htmlDocumentParser.FindSpecificLink("a", "href", "facebook", htmlDocument);
@@ -68,10 +68,10 @@ namespace Краулер.Helpers {
             //dictionary
             dictionary.Add("The number of all links", links.Count.ToString());
             dictionary.Add("Number of links that contain Img in the anchor", linkWithAncorImg.Count.ToString());
-            dictionary.Add("Number of all internal links", countInternalLinks.ToString());
-            dictionary.Add("Number of unique internal links", uniqIntLink.ToString());
-            dictionary.Add("Number of not unique internal links", notUnicLink.ToString());
-            //// dictionary.Add("The value of <html lang> is", htmlLang);
+            dictionary.Add("Number of all internal links", listInternalLinks.Count.ToString());
+            dictionary.Add("Number of unique internal links", uniqueInternalLinks.Count.ToString());
+            dictionary.Add("Number of not unique internal links", nonUniqueInternalLinks.ToString());
+            dictionary.Add("The value of <html lang> is", htmlLang);
             dictionary.Add("Number of tags <img src> ", srcImg.Count.ToString());
             dictionary.Add("Number of style <background-image> had url on the start page is", bgImageUrl.ToString());
             dictionary.Add("Number of tags <title> ", title.Count.ToString());
@@ -88,7 +88,7 @@ namespace Краулер.Helpers {
             dictionary.Add("vk", vk);
             dictionary.Add("google", google);
 
-            if (_htmlDocumentParser.CheckingPageForPriority(uri.LocalPath, uriStartPage.LocalPath)) {
+            if (!_htmlDocumentParser.IsMainPage(uri.LocalPath, uriStartPage.LocalPath)) {
                 var linksExcludingThoseOnTheMainPage =
                     links.Count - links.Intersect(_htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocumentMainPage).ToList()).ToList().Count;
                 var srcImgExcludingThoseOnTheMainPage = srcImg.Count - _htmlDocumentParser.GetListAttributesFromSelector("img", "src", htmlDocumentMainPage)
