@@ -11,5 +11,6 @@ namespace Краулер.Helpers {
             string content = _client.DownloadString(uri);
             return content;
         }
+        
     }
 }
