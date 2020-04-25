@@ -4,14 +4,20 @@ using System.IO;
 using System.Linq;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
+using Newtonsoft.Json;
 
 namespace Краулер.Helpers {
     public class ReportCreater {
-        private readonly HtmlDocumentParser _htmlDocumentParser = new HtmlDocumentParser();
-        private readonly RegexHelper _regexHelper = new RegexHelper();
-        private readonly WebHelper _webHelper = new WebHelper();
+        private readonly IHtmlDocumentParser _htmlDocumentParser;
+        private readonly IRegexHelper _regexHelper ;
+        private readonly IWebHelper _webHelper;
+        public ReportCreater(IHtmlDocumentParser htmlDocumentParser, IRegexHelper regexHelper, IWebHelper webHelper) {
+            _htmlDocumentParser = htmlDocumentParser;
+            _regexHelper = regexHelper;
+            _webHelper = webHelper;
+        }
 
-        public string PageParse(string domain) {
+        public Dictionary<string, string> PageParse(string domain) {
             //Start Page
             Uri uri = new Uri(domain);
             string uriHost = uri.Host;
@@ -30,7 +36,7 @@ namespace Краулер.Helpers {
             HtmlParser xDocStart = new HtmlParser();
             IHtmlDocument htmlDocumentMainPage = xDocStart.ParseDocument(contentMain);
 
-            Dictionary<string, string> dictionary = new Dictionary<string, string>();
+            
             var links = _htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocument);
             var srcImg = _htmlDocumentParser.GetListAttributesFromSelector("img", "src", htmlDocument);
             var title = _htmlDocumentParser.GetListAttributesFromSelector("[title]", "title", htmlDocument);
@@ -47,25 +53,22 @@ namespace Краулер.Helpers {
             var linkWithAncorImg = _htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocument)
                 .Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains("img"))
                 .ToList();
-            
+
             var listInternalLinks = links.Where(e => !string.IsNullOrWhiteSpace(e) && (e.Contains(uriHost) || e.StartsWith("/"))).ToList();
-      
+
             var uniqueInternalLinks = listInternalLinks.ToHashSet();
             var nonUniqueInternalLinks = listInternalLinks.Count - uniqueInternalLinks.Count;
-            
+
             var htmlLang = _htmlDocumentParser.GetListAttributesFromSelector("html", "xml:lang", htmlDocument).ToList().FirstOrDefault() ?? "missing";
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //TODO
-            string instagram = _htmlDocumentParser.FindSpecificLink("a", "href", "instagram", htmlDocument);
-            string twitter = _htmlDocumentParser.FindSpecificLink("a", "href", "twitter", htmlDocument);
-            string facebook = _htmlDocumentParser.FindSpecificLink("a", "href", "facebook", htmlDocument);
-            string youtube = _htmlDocumentParser.FindSpecificLink("a", "href", "youtube", htmlDocument);
-            string vk = _htmlDocumentParser.FindSpecificLink("a", "href", "vk", htmlDocument);
-            string google = _htmlDocumentParser.FindSpecificLink("a", "href", "google", htmlDocument);
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            //dictionary
+            string instagram = links.FirstOrDefault(e => e.Contains("instagram")) ?? "missing";
+            string twitter = links.FirstOrDefault(e => e.Contains("twitter")) ?? "missing";
+            string facebook = links.FirstOrDefault(e => e.Contains("facebook")) ?? "missing";
+            string youtube = links.FirstOrDefault(e => e.Contains("youtube")) ?? "missing";
+            string vk = links.FirstOrDefault(e => e.Contains("vk")) ?? "missing";
+            string google = links.FirstOrDefault(e => e.Contains("google")) ?? "missing";
+            
+            Dictionary<string, string> dictionary = new Dictionary<string, string>();
             dictionary.Add("The number of all links", links.Count.ToString());
             dictionary.Add("Number of links that contain Img in the anchor", linkWithAncorImg.Count.ToString());
             dictionary.Add("Number of all internal links", listInternalLinks.Count.ToString());
@@ -125,7 +128,17 @@ namespace Краулер.Helpers {
                 s += keyValue.Key + " = " + keyValue.Value + "\r\n";
             }
 
-            return s;
+            //return s;
+            return dictionary;
         }
+
+        public void ShowDictionary(Dictionary<string, string> dictionary) {
+            string s = "";
+            foreach (KeyValuePair<string, string> keyValue in dictionary) {
+                s += keyValue.Key + " = " + keyValue.Value + "\r\n";
+                Console.WriteLine(s);
+            }
+        }
+
     }
 }

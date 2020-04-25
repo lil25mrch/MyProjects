@@ -2,7 +2,7 @@ using System;
 using System.Net;
 
 namespace Краулер.Helpers {
-    public class WebHelper {
+    public class WebHelper : IWebHelper {
         private readonly WebClient _client = new WebClient();
 
         public string GetContent(string domain) {
