@@ -122,13 +122,7 @@ namespace Краулер.Helpers {
                 dictionary.Add("The number of h5 headers on the page, excluding those on the main page", h5CountDiff.ToString());
                 dictionary.Add("The number of h6 headers on the page, excluding those on the main page", h6CountDiff.ToString());
             }
-
-            string s = "";
-            foreach (KeyValuePair<string, string> keyValue in dictionary) {
-                s += keyValue.Key + " = " + keyValue.Value + "\r\n";
-            }
-
-            //return s;
+            
             return dictionary;
         }
 
