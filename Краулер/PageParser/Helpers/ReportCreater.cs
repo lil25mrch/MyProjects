@@ -21,106 +21,114 @@ namespace PageParser.Helpers {
         public Dictionary<string, string> PageParse(string domain) {
             
             Uri uri = new Uri(domain);
+            string contentStartPage = _webHelper.GetContent(domain);
             string uriHost = uri.Host;
-            string content = _webHelper.GetContent(domain);
-            File.WriteAllText(uri.Host + ".txt", content);
+            File.WriteAllText(uri.Host + ".txt", contentStartPage);
             HtmlParser xDoc = new HtmlParser();
-            IHtmlDocument htmlDocument = xDoc.ParseDocument(content);
+            IHtmlDocument parsedStartPage = xDoc.ParseDocument(contentStartPage);
+            
+            string uriHomePageString = uri.Scheme + "://" + uri.Host;
+            Uri uriHomePage = new Uri(uriHomePageString);
 
-            //Main Page
-            string uriMain = uri.Scheme + "://" + uri.Host;
-
-            Uri uriStartPage = new Uri(uriMain);
-
-            string contentMain = _webHelper.GetContent(uriMain);
-            File.WriteAllText(uriStartPage.Host + "start.txt", contentMain);
+            string contentHomePage = _webHelper.GetContent(uriHomePageString);
+            //File.WriteAllText(uriHomePage + ".txt", contentHomePage);
             HtmlParser xDocStart = new HtmlParser();
-            IHtmlDocument htmlDocumentMainPage = xDocStart.ParseDocument(contentMain);
+            IHtmlDocument parsedHomePage = xDocStart.ParseDocument(contentHomePage);
 
-            var links = _htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocument);
-            var srcImg = _htmlDocumentParser.GetListAttributesFromSelector("img", "src", htmlDocument);
-            var title = _htmlDocumentParser.GetListAttributesFromSelector("[title]", "title", htmlDocument);
-            var titleAverage = (int) Math.Round(title.Select(e => e.Length).Average());
-
-            var h2Count = _htmlDocumentParser.GetListAttributesFromSelector("h2", "h2", htmlDocument);
-            var h3Count = _htmlDocumentParser.GetListAttributesFromSelector("h3", "h3", htmlDocument);
-            var h4Count = _htmlDocumentParser.GetListAttributesFromSelector("h4", "h4", htmlDocument);
-            var h5Count = _htmlDocumentParser.GetListAttributesFromSelector("h5", "h5", htmlDocument);
-            var h6Count = _htmlDocumentParser.GetListAttributesFromSelector("h6", "h6", htmlDocument);
-
-            var bgImageUrl = _regexHelper.RegexList("\"background-image:(\\s*)url", content).Count;
-
-            var linkWithAncorImg = _htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocument)
-                .Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains("img"))
-                .ToList();
-
-            var listInternalLinks = links.Where(e => !string.IsNullOrWhiteSpace(e) && (e.Contains(uriHost) || e.StartsWith("/"))).ToList();
-
-            var uniqueInternalLinks = listInternalLinks.ToHashSet();
-            var nonUniqueInternalLinks = listInternalLinks.Count - uniqueInternalLinks.Count;
-
-            var htmlLang = _htmlDocumentParser.GetListAttributesFromSelector("html", "xml:lang", htmlDocument).ToList().FirstOrDefault() ?? "missing";
-
-            string instagram = links.FirstOrDefault(e => e.Contains("instagram")) ?? "missing";
-            string twitter = links.FirstOrDefault(e => e.Contains("twitter")) ?? "missing";
-            string facebook = links.FirstOrDefault(e => e.Contains("facebook")) ?? "missing";
-            string youtube = links.FirstOrDefault(e => e.Contains("youtube")) ?? "missing";
-            string vk = links.FirstOrDefault(e => e.Contains("vk")) ?? "missing";
-            string google = links.FirstOrDefault(e => e.Contains("google")) ?? "missing";
-
+            List<string> listLinks = _htmlDocumentParser.GetListSelectorWithAttribute("a", "href", parsedStartPage);
+            List<string> listInternalLinks = listLinks.Where(e => !string.IsNullOrWhiteSpace(e) && (e.Contains(uriHost) || e.StartsWith("/"))).ToList();
+            HashSet<string> uniqueInternalLinks = listInternalLinks.ToHashSet();
+            int nonUniqueInternalLinks = listInternalLinks.Count - uniqueInternalLinks.Count;
+            List<string> listInternalLinksWithImgAnchor  = listInternalLinks.Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains("img")).ToList();
+            string htmlLangValue = _htmlDocumentParser.GetListSelectorWithAttribute("html", "xml:lang", parsedStartPage).ToList().FirstOrDefault() ?? "does not exist";
+            List<string> imgSrcTagList = _htmlDocumentParser.GetListSelectorWithAttribute("img", "src", parsedStartPage);
+            List<string> listTitles = _htmlDocumentParser.GetListSelectorWithAttribute("[title]", "title", parsedStartPage);
+            int titleAverageLength = (int) Math.Round(listTitles.Select(e => e.Length).Average());
+            int numberBackgroundImageWithUrl = _regexHelper.RegexList("\"background-image:(\\s*)url", contentStartPage).Count;
+            var listH2Header  = _htmlDocumentParser.GetListSelectorWithAttribute("h2", "h2", parsedStartPage);
+            var listH3Header  = _htmlDocumentParser.GetListSelectorWithAttribute("h3", "h3", parsedStartPage);
+            var listH4Header  = _htmlDocumentParser.GetListSelectorWithAttribute("h4", "h4", parsedStartPage);
+            var listH5Header  = _htmlDocumentParser.GetListSelectorWithAttribute("h5", "h5", parsedStartPage);
+            var listH6Header  = _htmlDocumentParser.GetListSelectorWithAttribute("h6", "h6", parsedStartPage);
+            string instagramLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "instagram");
+            string twitterLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "twitter");
+            string facebookLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "facebook");
+            string youtubeLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "youtube");
+            string vkLink =_htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "vk");
+            string googleLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "google");
+            
+            
+            string isPageHome;
+            if (_htmlDocumentParser.IsHomePage(uri.LocalPath, uriHomePage.LocalPath)) {
+                isPageHome = "home";
+            } else {
+                isPageHome = "start";
+            }
             Dictionary<string, string> dictionary = new Dictionary<string, string>();
-            dictionary.Add("The number of all links", links.Count.ToString());
-            dictionary.Add("Number of links that contain Img in the anchor", linkWithAncorImg.Count.ToString());
-            dictionary.Add("Number of all internal links", listInternalLinks.Count.ToString());
-            dictionary.Add("Number of unique internal links", uniqueInternalLinks.Count.ToString());
-            dictionary.Add("Number of not unique internal links", nonUniqueInternalLinks.ToString());
-            dictionary.Add("The value of <html lang> is", htmlLang);
-            dictionary.Add("Number of tags <img src> ", srcImg.Count.ToString());
-            dictionary.Add("Number of style <background-image> had url on the start page is", bgImageUrl.ToString());
-            dictionary.Add("Number of tags <title> ", title.Count.ToString());
-            dictionary.Add("The average length of the tag <title> value is", titleAverage.ToString());
-            dictionary.Add("The number of h2 headers on the start page is", h2Count.Count.ToString());
-            dictionary.Add("The number of h3 headers on the start page is", h3Count.Count.ToString());
-            dictionary.Add("The number of h4 headers on the start page is", h4Count.Count.ToString());
-            dictionary.Add("The number of h5 headers on the start page is", h5Count.Count.ToString());
-            dictionary.Add("The number of h6 headers on the start page is", h6Count.Count.ToString());
-            dictionary.Add("instagram", instagram);
-            dictionary.Add("twitter", twitter);
-            dictionary.Add("facebook", facebook);
-            dictionary.Add("youtube", youtube);
-            dictionary.Add("vk", vk);
-            dictionary.Add("google", google);
-
-            if (!_htmlDocumentParser.IsMainPage(uri.LocalPath, uriStartPage.LocalPath)) {
-                var linksExcludingThoseOnTheMainPage =
-                    links.Count - links.Intersect(_htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocumentMainPage).ToList()).ToList().Count;
-                var srcImgExcludingThoseOnTheMainPage = srcImg.Count - _htmlDocumentParser.GetListAttributesFromSelector("img", "src", htmlDocumentMainPage)
-                                                            .Where(e => links.Contains(e))
+            dictionary.Add("This page is ", isPageHome);
+            dictionary.Add("Number of all links per page: ", listLinks.Count.ToString());
+            dictionary.Add("Number of all internal links per page: ", listInternalLinks.Count.ToString());
+            dictionary.Add("Number of unique internal links per page: ", uniqueInternalLinks.Count.ToString());
+            dictionary.Add("Number of not unique internal links per page: ", nonUniqueInternalLinks.ToString());
+            dictionary.Add("The number of internal links which instead of the anchor <img> per page: ", listInternalLinksWithImgAnchor.Count.ToString());
+            dictionary.Add("The value of <html lang> is", htmlLangValue);
+            dictionary.Add("Number of <img src> tags per page: ", imgSrcTagList.Count.ToString());
+            dictionary.Add("Number of tags <title> per page: ", listTitles.Count.ToString());
+            dictionary.Add("The average length of the tag <title> value is: ", titleAverageLength.ToString());
+            dictionary.Add("Number of style <background-image: url> per page: ", numberBackgroundImageWithUrl.ToString());
+            
+            dictionary.Add("Link to the social network instagram ", instagramLink);
+            dictionary.Add("Link to the social network twitter ", twitterLink);
+            dictionary.Add("Link to the social network facebook ", facebookLink);
+            dictionary.Add("Link to the social network youtube", youtubeLink);
+            dictionary.Add("Link to the social network vk ", vkLink);
+            dictionary.Add("Link to the social network google ", googleLink);
+            
+            dictionary.Add("Number of h2 headers per page: ", listH2Header .Count.ToString());
+            dictionary.Add("Number of h3 headers per page: ", listH3Header .Count.ToString());
+            dictionary.Add("Number of h4 headers per page: ", listH4Header .Count.ToString());
+            dictionary.Add("Number of h5 headers per page: ", listH5Header .Count.ToString());
+            dictionary.Add("Number of h6 headers per page: ", listH6Header .Count.ToString());
+            
+            
+            if (!_htmlDocumentParser.IsHomePage(uri.LocalPath, uriHomePage.LocalPath)) {
+                var linksWithoutHomePage =
+                    listLinks.Count - listLinks.Intersect(_htmlDocumentParser.GetListSelectorWithAttribute("a", "href", parsedHomePage).ToList()).ToList().Count;
+                var imgSrcTagWithoutHomePage = imgSrcTagList.Count - _htmlDocumentParser.GetListSelectorWithAttribute("img", "src", parsedHomePage)
+                                                            .Where(e => listLinks.Contains(e))
                                                             .ToList()
                                                             .Count;
-                int h2CountDiff = h2Count.Count - _htmlDocumentParser.GetListAttributesFromSelector("h2", "h2", htmlDocumentMainPage).Where(e => links.Contains(e)).ToList().Count;
-                var h3CountDiff = h3Count.Count - _htmlDocumentParser.GetListAttributesFromSelector("h3", "h3", htmlDocumentMainPage).Where(e => links.Contains(e)).ToList().Count;
-                var h4CountDiff = h4Count.Count - _htmlDocumentParser.GetListAttributesFromSelector("h4", "h4", htmlDocumentMainPage).Where(e => links.Contains(e)).ToList().Count;
-                var h5CountDiff = h5Count.Count - _htmlDocumentParser.GetListAttributesFromSelector("h5", "h5", htmlDocumentMainPage).Where(e => links.Contains(e)).ToList().Count;
-                var h6CountDiff = h6Count.Count - _htmlDocumentParser.GetListAttributesFromSelector("h6", "h6", htmlDocumentMainPage).Where(e => links.Contains(e)).ToList().Count;
-                var tableDiff = _htmlDocumentParser.GetListAttributesFromSelector("[table]", "table", htmlDocument).Count - _htmlDocumentParser
-                                    .GetListAttributesFromSelector("[table]", "table", htmlDocumentMainPage)
-                                    .Where(e => links.Contains(e))
+                int h2HeaderWithoutHomePage = listH2Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h2", "h2", parsedHomePage)
+                                                  .Where(e => listLinks.Contains(e)).ToList().Count;
+                var h3HeaderWithoutHomePage = listH3Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h3", "h3", parsedHomePage)
+                                                  .Where(e => listLinks.Contains(e)).ToList().Count;
+                var h4HeaderWithoutHomePage = listH4Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h4", "h4", parsedHomePage)
+                                                  .Where(e => listLinks.Contains(e)).ToList().Count;
+                var h5HeaderWithoutHomePage = listH5Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h5", "h5", parsedHomePage)
+                                                  .Where(e => listLinks.Contains(e)).ToList().Count;
+                var h6HeaderWithoutHomePage = listH6Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h6", "h6", parsedHomePage)
+                                                  .Where(e => listLinks.Contains(e)).ToList().Count;
+                var tableWithoutHomePage = _htmlDocumentParser.GetListSelectorWithAttribute("[table]", "table", parsedStartPage).Count - _htmlDocumentParser
+                                    .GetListSelectorWithAttribute("[table]", "table", parsedHomePage)
+                                    .Where(e => listLinks.Contains(e))
                                     .ToList()
                                     .Count;
-                var linkWithAncorImgDiff = linkWithAncorImg.Count -
-                                           linkWithAncorImg.Intersect(_htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocumentMainPage).ToList()).ToList().Count;
-                ;
-
-                dictionary.Add("The number of all links without those on the main page", linksExcludingThoseOnTheMainPage.ToString());
-                dictionary.Add("Number of links that contain Img in the anchor, excluding those on the main page", linkWithAncorImgDiff.ToString());
-                dictionary.Add("Number of <img src> tags on the page, excluding those on the main page", srcImgExcludingThoseOnTheMainPage.ToString());
-                dictionary.Add("Number of tags <table> ", tableDiff.ToString());
-                dictionary.Add("The number of h2 headers on the page, excluding those on the main page", h2CountDiff.ToString());
-                dictionary.Add("The number of h3 headers on the page, excluding those on the main page", h3CountDiff.ToString());
-                dictionary.Add("The number of h4 headers on the page, excluding those on the main page", h4CountDiff.ToString());
-                dictionary.Add("The number of h5 headers on the page, excluding those on the main page", h5CountDiff.ToString());
-                dictionary.Add("The number of h6 headers on the page, excluding those on the main page", h6CountDiff.ToString());
+                var internalLinksWithImgAnchorWithoutHomePage = listInternalLinksWithImgAnchor .Count -
+                                           listInternalLinksWithImgAnchor .Intersect(_htmlDocumentParser
+                                           .GetListSelectorWithAttribute("a", "href", parsedHomePage)
+                                           .ToList()).ToList().Count;
+                
+                dictionary.Add("Number of all links per page, excluding matches to the home page: ", linksWithoutHomePage.ToString());
+                dictionary.Add("The number of internal links which instead of the anchor <img> per page, excluding matches to the home page: ", internalLinksWithImgAnchorWithoutHomePage.ToString());
+                dictionary.Add("Number of <img src> tags per page, excluding matches to the home page: ", imgSrcTagWithoutHomePage.ToString());
+                dictionary.Add("Number of <table> tags per page, excluding matches to the home page: ", tableWithoutHomePage.ToString());
+                
+                
+                dictionary.Add("Number of h2 headers per page, excluding matches to the home page: ", h2HeaderWithoutHomePage.ToString());
+                dictionary.Add("Number of h3 headers per page, excluding matches to the home page: ", h3HeaderWithoutHomePage.ToString());
+                dictionary.Add("Number of h4 headers per page, excluding matches to the home page: ", h4HeaderWithoutHomePage.ToString());
+                dictionary.Add("Number of h5 headers per page, excluding matches to the home page: ", h5HeaderWithoutHomePage.ToString());
+                dictionary.Add("Number of h6 headers per page, excluding matches to the home page: ", h6HeaderWithoutHomePage.ToString());
             }
 
             return dictionary;

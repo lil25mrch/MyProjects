@@ -3,7 +3,8 @@ using AngleSharp.Html.Dom;
 
 namespace PageParser.Helpers.Interfaces {
     public interface IHtmlDocumentParser {
-        List<string> GetListAttributesFromSelector(string selector, string attribute, IHtmlDocument htmlDoc);
-        bool IsMainPage(string startPageAdress, string mainPageAdress);
+        List<string> GetListSelectorWithAttribute(string selector, string attribute, IHtmlDocument parsedPage);
+        bool IsHomePage(string startPageAdress, string mainPageAdress);
+        string PresenceSocialNetworkLink(List<string> list, string nameSocialNetwork);
     }
 }
