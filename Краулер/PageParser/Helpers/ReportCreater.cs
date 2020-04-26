@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using Newtonsoft.Json;
+using PageParser.Helpers.Interfaces;
 
-namespace Краулер.Helpers {
+namespace PageParser.Helpers {
     public class ReportCreater {
         private readonly IHtmlDocumentParser _htmlDocumentParser;
-        private readonly IRegexHelper _regexHelper ;
+        private readonly IRegexHelper _regexHelper;
         private readonly IWebHelper _webHelper;
+
         public ReportCreater(IHtmlDocumentParser htmlDocumentParser, IRegexHelper regexHelper, IWebHelper webHelper) {
             _htmlDocumentParser = htmlDocumentParser;
             _regexHelper = regexHelper;
@@ -18,7 +19,7 @@ namespace Краулер.Helpers {
         }
 
         public Dictionary<string, string> PageParse(string domain) {
-            //Start Page
+            
             Uri uri = new Uri(domain);
             string uriHost = uri.Host;
             string content = _webHelper.GetContent(domain);
@@ -36,7 +37,6 @@ namespace Краулер.Helpers {
             HtmlParser xDocStart = new HtmlParser();
             IHtmlDocument htmlDocumentMainPage = xDocStart.ParseDocument(contentMain);
 
-            
             var links = _htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocument);
             var srcImg = _htmlDocumentParser.GetListAttributesFromSelector("img", "src", htmlDocument);
             var title = _htmlDocumentParser.GetListAttributesFromSelector("[title]", "title", htmlDocument);
@@ -48,7 +48,7 @@ namespace Краулер.Helpers {
             var h5Count = _htmlDocumentParser.GetListAttributesFromSelector("h5", "h5", htmlDocument);
             var h6Count = _htmlDocumentParser.GetListAttributesFromSelector("h6", "h6", htmlDocument);
 
-            var bgImageUrl = _regexHelper.RegulStyle("\"background-image:(\\s*)url", content);
+            var bgImageUrl = _regexHelper.RegexList("\"background-image:(\\s*)url", content).Count;
 
             var linkWithAncorImg = _htmlDocumentParser.GetListAttributesFromSelector("a", "href", htmlDocument)
                 .Where(e => !string.IsNullOrWhiteSpace(e) && e.Contains("img"))
@@ -67,7 +67,7 @@ namespace Краулер.Helpers {
             string youtube = links.FirstOrDefault(e => e.Contains("youtube")) ?? "missing";
             string vk = links.FirstOrDefault(e => e.Contains("vk")) ?? "missing";
             string google = links.FirstOrDefault(e => e.Contains("google")) ?? "missing";
-            
+
             Dictionary<string, string> dictionary = new Dictionary<string, string>();
             dictionary.Add("The number of all links", links.Count.ToString());
             dictionary.Add("Number of links that contain Img in the anchor", linkWithAncorImg.Count.ToString());
@@ -122,17 +122,8 @@ namespace Краулер.Helpers {
                 dictionary.Add("The number of h5 headers on the page, excluding those on the main page", h5CountDiff.ToString());
                 dictionary.Add("The number of h6 headers on the page, excluding those on the main page", h6CountDiff.ToString());
             }
-            
+
             return dictionary;
         }
-
-        public void ShowDictionary(Dictionary<string, string> dictionary) {
-            string s = "";
-            foreach (KeyValuePair<string, string> keyValue in dictionary) {
-                s += keyValue.Key + " = " + keyValue.Value + "\r\n";
-                Console.WriteLine(s);
-            }
-        }
-
     }
 }

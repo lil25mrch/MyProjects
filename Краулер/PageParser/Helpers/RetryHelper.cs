@@ -1,12 +1,13 @@
 using System;
 using System.Threading.Tasks;
+using PageParser.Helpers.Interfaces;
 
-namespace Краулер.Helpers {
-    
+namespace PageParser.Helpers {
     public class RetryHelper : IRetryHelper {
-        readonly ReportCreater _reportCreater;
         private readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
+        readonly ReportCreater _reportCreater;
         private readonly int retryCount = 3;
+
         public RetryHelper(ReportCreater reportCreater) {
             _reportCreater = reportCreater;
         }
@@ -25,7 +26,6 @@ namespace Краулер.Helpers {
                 } finally {
                     await Task.Delay(_delay);
                 }
-                
             }
         }
     }

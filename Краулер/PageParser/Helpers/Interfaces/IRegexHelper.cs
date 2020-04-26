@@ -1,5 +1,7 @@
-namespace Краулер.Helpers {
+using System.Collections.Generic;
+
+namespace PageParser.Helpers.Interfaces {
     public interface IRegexHelper {
-        int RegulStyle(string searchTense, string cont);
+        List<string> RegexList(string searchTense, string content);
     }
 }
