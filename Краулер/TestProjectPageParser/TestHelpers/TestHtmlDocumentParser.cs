@@ -8,18 +8,17 @@ namespace Tests {
         public void Setup() { }
 
         [Test]
-        [TestCase(false)]
-        [TestCase(true)]
-        [TestCase(true)]
+        [TestCase("", "a", false)]
+        [TestCase("a", "a", true)]
+        [TestCase("http//:a.ru", "a.ru",true)]
         
-        public void TestIsMainPage(bool b) {
+        public void TestIsMainPage(string start, string main, bool b) {
             // Arrange
             HtmlDocumentParser htmlDocumentParser = new HtmlDocumentParser();
             
             // Act
-            bool result = htmlDocumentParser.IsMainPage("", "a");
-             result = htmlDocumentParser.IsMainPage("a", "a");
-             result = htmlDocumentParser.IsMainPage("http//:a.ru", "a.ru");
+            bool result = htmlDocumentParser.IsMainPage(start, main);
+           
             // Assert
             Assert.AreEqual(result, b);
           
