@@ -10,7 +10,7 @@ namespace PageParser.Helpers {
             return list;
         }
 
-        public bool IsHomePage(string startPageAdress, string mainPageAdress) {
+        public bool IsMainPage(string startPageAdress, string mainPageAdress) {
             bool Bool = startPageAdress == mainPageAdress;
             return Bool;
         }
