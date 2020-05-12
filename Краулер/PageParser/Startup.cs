@@ -20,7 +20,7 @@ namespace PageParser {
                 .AddSingleton<IHtmlDocumentParser, HtmlDocumentParser>()
                 .AddSingleton<IRegexHelper, RegexHelper>()
                 .AddSingleton<IRetryHelper, RetryHelper>()
-                .AddSingleton<IWebHelper, WebHelper>();
+                .AddSingleton<IWebHelper, RestHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

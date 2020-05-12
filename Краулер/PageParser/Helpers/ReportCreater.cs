@@ -10,17 +10,18 @@ namespace PageParser.Helpers {
     public class ReportCreater {
         private readonly IHtmlDocumentParser _htmlDocumentParser;
         private readonly IRegexHelper _regexHelper;
-        private readonly IWebHelper _webHelper;
+        private readonly IWebHelper _restHelper;
 
-        public ReportCreater(IHtmlDocumentParser htmlDocumentParser, IRegexHelper regexHelper, IWebHelper webHelper) {
+        public ReportCreater(IHtmlDocumentParser htmlDocumentParser, IRegexHelper regexHelper, IWebHelper restHelper) {
             _htmlDocumentParser = htmlDocumentParser;
             _regexHelper = regexHelper;
-            _webHelper = webHelper;
+            _restHelper = restHelper;
         }
 
         public Dictionary<string, string> PageParse(string domain) {
             Uri uri = new Uri(domain);
-            string contentStartPage = _webHelper.GetContent(domain);
+            string contentStartPage = _restHelper.GetContent(domain);
+
             string uriHost = uri.Host;
             File.WriteAllText(uri.Host + ".txt", contentStartPage);
             HtmlParser xDoc = new HtmlParser();
@@ -84,7 +85,7 @@ namespace PageParser.Helpers {
             dictionary.Add("Number of h6 headers per page: ", listH6Header.Count.ToString());
 
             if (!_htmlDocumentParser.IsMainPage(uri.LocalPath, uriMainPage.LocalPath)) {
-                string contentMainPage = _webHelper.GetContent(uriMainPage.ToString());
+                string contentMainPage = _restHelper.GetContent(uriMainPage.ToString());
                 HtmlParser xDocMain = new HtmlParser();
                 IHtmlDocument parsedMainPage = xDocMain.ParseDocument(contentMainPage);
 
