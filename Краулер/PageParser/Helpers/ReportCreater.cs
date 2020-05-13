@@ -22,11 +22,11 @@ namespace PageParser.Helpers {
             if (!domain.StartsWith("http")) {
                 domain = Uri.UriSchemeHttp + Uri.SchemeDelimiter + domain;
             }
+
             Uri uri = new Uri(domain);
             string contentStartPage = _restHelper.GetContent(domain);
 
             string uriHost = uri.Host;
-            File.WriteAllText(uri.Host + ".txt", contentStartPage);
             HtmlParser xDoc = new HtmlParser();
             IHtmlDocument parsedStartPage = xDoc.ParseDocument(contentStartPage);
 

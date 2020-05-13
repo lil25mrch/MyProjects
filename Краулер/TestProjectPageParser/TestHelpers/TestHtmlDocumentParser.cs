@@ -26,7 +26,6 @@ namespace Tests {
         [TestCase("https://a.ru/b", false)]
         [TestCase("www.a.ru/b", false)]
         [TestCase("a.ru/b", false)]
-        
         public void TestIsMainPage(string domain, bool b) {
             // Arrange
             HtmlDocumentParser htmlDocumentParser = new HtmlDocumentParser();
@@ -35,25 +34,20 @@ namespace Tests {
             if (!domain.StartsWith("http")) {
                 domain = Uri.UriSchemeHttp + Uri.SchemeDelimiter + domain;
             }
+
             bool result = htmlDocumentParser.IsMainPage(domain);
 
             // Assert
             Assert.AreEqual(result, b);
         }
-        
-        
-        
+
         [Test]
         [TestCase("/b")]
-
         public void TestIsMainPageUriInvalid(string domain) {
             HtmlDocumentParser htmlDocumentParser = new HtmlDocumentParser();
 
             // Assert
-          
-            Assert.Throws<UriFormatException>(() =>  htmlDocumentParser.IsMainPage(domain));
+            Assert.Throws<UriFormatException>(() => htmlDocumentParser.IsMainPage(domain));
         }
-
-        
     }
 }

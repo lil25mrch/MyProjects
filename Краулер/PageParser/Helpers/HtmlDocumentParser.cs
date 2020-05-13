@@ -14,7 +14,6 @@ namespace PageParser.Helpers {
         public bool IsMainPage(string domain) {
             Uri uri = new Uri(domain);
             if (uri.AbsolutePath == "/" || uri.AbsolutePath == null || uri.AbsolutePath == String.Empty) {
-               
                 return true;
             } else {
                 return false;
