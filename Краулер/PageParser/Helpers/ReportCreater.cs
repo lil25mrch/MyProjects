@@ -19,6 +19,9 @@ namespace PageParser.Helpers {
         }
 
         public Dictionary<string, string> PageParse(string domain) {
+            if (!domain.StartsWith("http")) {
+                domain = Uri.UriSchemeHttp + Uri.SchemeDelimiter + domain;
+            }
             Uri uri = new Uri(domain);
             string contentStartPage = _restHelper.GetContent(domain);
 
@@ -26,8 +29,6 @@ namespace PageParser.Helpers {
             File.WriteAllText(uri.Host + ".txt", contentStartPage);
             HtmlParser xDoc = new HtmlParser();
             IHtmlDocument parsedStartPage = xDoc.ParseDocument(contentStartPage);
-
-            Uri uriMainPage = new Uri(uri.Scheme + "://" + uri.Host);
 
             List<string> listLinks = _htmlDocumentParser.GetListSelectorWithAttribute("a", "href", parsedStartPage);
             List<string> listInternalLinks = listLinks.Where(e => !string.IsNullOrWhiteSpace(e) && (e.Contains(uriHost) || e.StartsWith("/"))).ToList();
@@ -52,7 +53,7 @@ namespace PageParser.Helpers {
             string googleLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "google");
 
             string isPageHome;
-            if (_htmlDocumentParser.IsMainPage(domain, uriMainPage.ToString())) {
+            if (_htmlDocumentParser.IsMainPage(domain)) {
                 isPageHome = "main";
             } else {
                 isPageHome = "start";
@@ -84,8 +85,8 @@ namespace PageParser.Helpers {
             dictionary.Add("Number of h5 headers per page: ", listH5Header.Count.ToString());
             dictionary.Add("Number of h6 headers per page: ", listH6Header.Count.ToString());
 
-            if (!_htmlDocumentParser.IsMainPage(uri.LocalPath, uriMainPage.LocalPath)) {
-                string contentMainPage = _restHelper.GetContent(uriMainPage.ToString());
+            if (!_htmlDocumentParser.IsMainPage(domain)) {
+                string contentMainPage = _restHelper.GetContent((uri.Scheme + "://" + uri.Host));
                 HtmlParser xDocMain = new HtmlParser();
                 IHtmlDocument parsedMainPage = xDocMain.ParseDocument(contentMainPage);
 

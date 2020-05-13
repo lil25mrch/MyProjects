@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AngleSharp.Html.Dom;
@@ -10,9 +11,14 @@ namespace PageParser.Helpers {
             return list;
         }
 
-        public bool IsMainPage(string startPageAdress, string mainPageAdress) {
-            bool Bool = startPageAdress == mainPageAdress;
-            return Bool;
+        public bool IsMainPage(string domain) {
+            Uri uri = new Uri(domain);
+            if (uri.AbsolutePath == "/" || uri.AbsolutePath == null || uri.AbsolutePath == String.Empty) {
+               
+                return true;
+            } else {
+                return false;
+            }
         }
 
         public string PresenceSocialNetworkLink(List<string> list, string nameSocialNetwork) {
