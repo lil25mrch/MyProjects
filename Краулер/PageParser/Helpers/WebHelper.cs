@@ -1,0 +1,17 @@
+using System;
+using System.Net;
+using PageParser.Helpers.Interfaces;
+
+namespace PageParser.Helpers {
+    public class WebHelper : IWebHelper {
+        private readonly WebClient _client = new WebClient();
+        private IWebHelper _webHelperImplementation;
+
+        public string GetContent(string domain) {
+            Uri uri = new Uri(domain);
+
+            string content = _client.DownloadString(uri);
+            return content;
+        }
+    }
+}
