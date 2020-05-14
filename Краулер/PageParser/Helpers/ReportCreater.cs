@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AngleSharp.Html.Dom;
@@ -19,14 +18,14 @@ namespace PageParser.Helpers {
             _restHelper = restHelper;
         }
 
-        public async Task<Dictionary<string,string>> PageParse(string domain) {
+        public async Task<Dictionary<string, string>> PageParse(string domain) {
             if (!domain.StartsWith("http")) {
                 domain = Uri.UriSchemeHttp + Uri.SchemeDelimiter + domain;
             }
 
             Uri uri = new Uri(domain);
-            
-            var contentStartPage =  await _restHelper.GetContent(domain);
+
+            string contentStartPage = await _restHelper.GetContent(domain);
 
             string uriHost = uri.Host;
             HtmlParser xDoc = new HtmlParser();
@@ -42,11 +41,11 @@ namespace PageParser.Helpers {
             List<string> listTitles = _htmlDocumentParser.GetListSelectorWithAttribute("[title]", "title", parsedStartPage);
             int titleAverageLength = (int) Math.Round(listTitles.Select(e => e.Length).Average());
             int numberBackgroundImageWithUrl = _regexHelper.RegexList("\"background-image:(\\s*)url", contentStartPage).Count;
-            var listH2Header = _htmlDocumentParser.GetListSelectorWithAttribute("h2", "h2", parsedStartPage);
-            var listH3Header = _htmlDocumentParser.GetListSelectorWithAttribute("h3", "h3", parsedStartPage);
-            var listH4Header = _htmlDocumentParser.GetListSelectorWithAttribute("h4", "h4", parsedStartPage);
-            var listH5Header = _htmlDocumentParser.GetListSelectorWithAttribute("h5", "h5", parsedStartPage);
-            var listH6Header = _htmlDocumentParser.GetListSelectorWithAttribute("h6", "h6", parsedStartPage);
+            List<string> listH2Header = _htmlDocumentParser.GetListSelectorWithAttribute("h2", "h2", parsedStartPage);
+            List<string> listH3Header = _htmlDocumentParser.GetListSelectorWithAttribute("h3", "h3", parsedStartPage);
+            List<string> listH4Header = _htmlDocumentParser.GetListSelectorWithAttribute("h4", "h4", parsedStartPage);
+            List<string> listH5Header = _htmlDocumentParser.GetListSelectorWithAttribute("h5", "h5", parsedStartPage);
+            List<string> listH6Header = _htmlDocumentParser.GetListSelectorWithAttribute("h6", "h6", parsedStartPage);
             string instagramLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "instagram");
             string twitterLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "twitter");
             string facebookLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "facebook");
@@ -92,9 +91,9 @@ namespace PageParser.Helpers {
                 HtmlParser xDocMain = new HtmlParser();
                 IHtmlDocument parsedMainPage = xDocMain.ParseDocument(contentMainPage);
 
-                var linksWithoutHomePage =
+                int linksWithoutHomePage =
                     listLinks.Count - listLinks.Intersect(_htmlDocumentParser.GetListSelectorWithAttribute("a", "href", parsedMainPage).ToList()).ToList().Count;
-                var imgSrcTagWithoutHomePage = imgSrcTagList.Count - _htmlDocumentParser.GetListSelectorWithAttribute("img", "src", parsedMainPage)
+                int imgSrcTagWithoutHomePage = imgSrcTagList.Count - _htmlDocumentParser.GetListSelectorWithAttribute("img", "src", parsedMainPage)
                                                    .Where(e => listLinks.Contains(e))
                                                    .ToList()
                                                    .Count;
@@ -102,28 +101,28 @@ namespace PageParser.Helpers {
                                                   .Where(e => listLinks.Contains(e))
                                                   .ToList()
                                                   .Count;
-                var h3HeaderWithoutHomePage = listH3Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h3", "h3", parsedMainPage)
+                int h3HeaderWithoutHomePage = listH3Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h3", "h3", parsedMainPage)
                                                   .Where(e => listLinks.Contains(e))
                                                   .ToList()
                                                   .Count;
-                var h4HeaderWithoutHomePage = listH4Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h4", "h4", parsedMainPage)
+                int h4HeaderWithoutHomePage = listH4Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h4", "h4", parsedMainPage)
                                                   .Where(e => listLinks.Contains(e))
                                                   .ToList()
                                                   .Count;
-                var h5HeaderWithoutHomePage = listH5Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h5", "h5", parsedMainPage)
+                int h5HeaderWithoutHomePage = listH5Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h5", "h5", parsedMainPage)
                                                   .Where(e => listLinks.Contains(e))
                                                   .ToList()
                                                   .Count;
-                var h6HeaderWithoutHomePage = listH6Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h6", "h6", parsedMainPage)
+                int h6HeaderWithoutHomePage = listH6Header.Count - _htmlDocumentParser.GetListSelectorWithAttribute("h6", "h6", parsedMainPage)
                                                   .Where(e => listLinks.Contains(e))
                                                   .ToList()
                                                   .Count;
-                var tableWithoutHomePage = _htmlDocumentParser.GetListSelectorWithAttribute("[table]", "table", parsedStartPage).Count - _htmlDocumentParser
+                int tableWithoutHomePage = _htmlDocumentParser.GetListSelectorWithAttribute("[table]", "table", parsedStartPage).Count - _htmlDocumentParser
                                                .GetListSelectorWithAttribute("[table]", "table", parsedMainPage)
                                                .Where(e => listLinks.Contains(e))
                                                .ToList()
                                                .Count;
-                var internalLinksWithImgAnchorWithoutHomePage = listInternalLinksWithImgAnchor.Count - listInternalLinksWithImgAnchor
+                int internalLinksWithImgAnchorWithoutHomePage = listInternalLinksWithImgAnchor.Count - listInternalLinksWithImgAnchor
                                                                     .Intersect(_htmlDocumentParser.GetListSelectorWithAttribute("a", "href", parsedMainPage).ToList())
                                                                     .ToList()
                                                                     .Count;

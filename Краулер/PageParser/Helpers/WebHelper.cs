@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using PageParser.Helpers.Interfaces;
 
 namespace PageParser.Helpers {
     public class WebHelper {
