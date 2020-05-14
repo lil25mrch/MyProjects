@@ -16,7 +16,7 @@ namespace PageParser {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
             services.AddMvc();
-            services.AddSingleton<ReportCreater>()
+            services.AddSingleton<IReportCreater, ReportCreater>()
                 .AddSingleton<IHtmlDocumentParser, HtmlDocumentParser>()
                 .AddSingleton<IRegexHelper, RegexHelper>()
                 .AddSingleton<IRetryHelper, RetryHelper>()
@@ -25,8 +25,7 @@ namespace PageParser {
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
-            app.UseDeveloperExceptionPage();
-
+            app.UseMiddleware(typeof(ErrorHandlingMiddleware));
             app.UseMvc();
         }
     }
