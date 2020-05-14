@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
+
 namespace PageParser.Helpers.Interfaces {
     public interface IWebHelper {
-        string GetContent(string domain);
+         Task<string> GetContent(string domain);
     }
 }

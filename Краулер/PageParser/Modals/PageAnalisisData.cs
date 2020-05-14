@@ -1,5 +1,5 @@
 namespace PageParser.Modals {
     public class PageAnalisisData {
-        public string Domain { get; set; }
+        public string[] Domains { get; set; }
     }
 }

@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using PageParser.Helpers.Interfaces;
 
 namespace PageParser.Helpers {
-    public class ReportCreater {
+    public class ReportCreater : IReportCreater {
         private readonly IHtmlDocumentParser _htmlDocumentParser;
         private readonly IRegexHelper _regexHelper;
         private readonly IWebHelper _restHelper;
@@ -18,13 +19,14 @@ namespace PageParser.Helpers {
             _restHelper = restHelper;
         }
 
-        public Dictionary<string, string> PageParse(string domain) {
+        public async Task<Dictionary<string,string>> PageParse(string domain) {
             if (!domain.StartsWith("http")) {
                 domain = Uri.UriSchemeHttp + Uri.SchemeDelimiter + domain;
             }
 
             Uri uri = new Uri(domain);
-            string contentStartPage = _restHelper.GetContent(domain);
+            
+            var contentStartPage =  await _restHelper.GetContent(domain);
 
             string uriHost = uri.Host;
             HtmlParser xDoc = new HtmlParser();
@@ -86,7 +88,7 @@ namespace PageParser.Helpers {
             dictionary.Add("Number of h6 headers per page: ", listH6Header.Count.ToString());
 
             if (!_htmlDocumentParser.IsMainPage(domain)) {
-                string contentMainPage = _restHelper.GetContent((uri.Scheme + "://" + uri.Host));
+                string contentMainPage = _restHelper.GetContent((uri.Scheme + "://" + uri.Host)).ToString();
                 HtmlParser xDocMain = new HtmlParser();
                 IHtmlDocument parsedMainPage = xDocMain.ParseDocument(contentMainPage);
 

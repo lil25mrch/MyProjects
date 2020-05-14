@@ -36,7 +36,7 @@ namespace Tests {
             // Assert
             
             _mockIWebHelper.Verify(e => e.GetContent(It.Is<string>(m => m == domain)), Times.Once );
-            //Assert.AreEqual(result1, null);
+            
         }
     }
 }
