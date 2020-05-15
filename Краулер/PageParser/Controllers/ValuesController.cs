@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using NLog;
 using PageParser.Helpers;
 using PageParser.Modals;
 
@@ -11,6 +13,7 @@ namespace PageParser.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase {
+        private readonly ILogger _logger = LogManager.GetLogger(nameof(ValuesController));
         private readonly IReportCreater _reportCreater;
 
         public ValuesController(IReportCreater reportCreater) {
@@ -22,6 +25,7 @@ namespace PageParser.Controllers {
             if (page.Domains.IsNullOrEmpty()) {
                 throw new ArgumentException("Domains's array is empty");
             }
+
             Dictionary<string, Task<Dictionary<string, string>>> tasks = new Dictionary<string, Task<Dictionary<string, string>>>();
 
             foreach (var domain in page.Domains.Distinct()) {
@@ -29,8 +33,9 @@ namespace PageParser.Controllers {
             }
 
             await Task.WhenAll(tasks.Values);
-
-            return tasks.ToDictionary(e => e.Key, e => e.Value.Result);
+            Dictionary<string, Dictionary<string, string>> result = tasks.ToDictionary(e => e.Key, e => e.Value.Result);
+            _logger.Info($"Results for  {JsonConvert.SerializeObject(page)} is {JsonConvert.SerializeObject(result)}");
+            return result;
         }
     }
 }

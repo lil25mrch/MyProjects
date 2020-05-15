@@ -9,6 +9,7 @@ namespace PageParser.Helpers {
 
         public async Task<string> GetContent(string domain) {
             _restClient.BaseUrl = new Uri(domain);
+
             var request = new RestRequest(domain);
 
             var content = await _restClient.ExecuteGetAsync(request);
