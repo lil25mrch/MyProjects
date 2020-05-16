@@ -20,11 +20,11 @@ namespace PageParser.Helpers {
             }
         }
 
-        public string PresenceSocialNetworkLink(List<string> list, string nameSocialNetwork) {
+        public bool PresenceSocialNetworkLink(List<string> list, string nameSocialNetwork) {
             string firstOrDefault = list.FirstOrDefault(e => e.Contains(nameSocialNetwork));
-            string report = firstOrDefault != null
-                ? $" is present."
-                : $" is missing.";
+            bool report = firstOrDefault != null
+                ? true
+                : false;
 
             return report;
         }
