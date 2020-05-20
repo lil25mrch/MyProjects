@@ -41,10 +41,6 @@ namespace Tests {
 
             // Act
             Dictionary<ResultItem, string> result1 = await reportCreater.PageParse(domain);
-            
-            if (!result1.TryGetValue(ResultItem.LinksCount, out content)) {
-                throw new Exception();
-            }
 
             // Assert
             Assert.AreEqual(result1[ResultItem.LinksCount], "6");
