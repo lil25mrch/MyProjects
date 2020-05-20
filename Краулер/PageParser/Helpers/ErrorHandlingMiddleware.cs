@@ -4,21 +4,21 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
-using PageParser.Controllers;
 using PageParser.Modals;
+using PageParser.Modals.Interfaces;
 
 namespace PageParser.Helpers {
     public class ErrorHandlingMiddleware {
-        private readonly RequestDelegate next;
-        private static PageAnalisisData _pageAnalisisData = new PageAnalisisData();
+        private readonly RequestDelegate _next;
+        private static readonly IPageAnalisisData _pageAnalisisData = new PageAnalisisData();
         private static readonly ILogger _logger = LogManager.GetLogger(nameof(ErrorHandlingMiddleware));
         public ErrorHandlingMiddleware(RequestDelegate next) {
-            this.next = next;
+            _next = next;
         }
 
         public async Task Invoke(HttpContext context) {
             try {
-                await next(context);
+                await _next(context);
             } catch (Exception ex) {
                 await HandleExceptionAsync(context, ex);
             }

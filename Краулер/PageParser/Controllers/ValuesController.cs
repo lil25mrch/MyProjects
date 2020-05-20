@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NLog;
 using PageParser.Helpers;
+using PageParser.Helpers.Interfaces;
 using PageParser.Modals;
 
 namespace PageParser.Controllers {

@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PageParser.Helpers;
 using PageParser.Helpers.Interfaces;
+using PageParser.Modals;
+using PageParser.Modals.Interfaces;
 
 namespace PageParser {
     public class Startup {
@@ -19,8 +21,8 @@ namespace PageParser {
             services.AddSingleton<IReportCreater, ReportCreater>()
                 .AddSingleton<IHtmlDocumentParser, HtmlDocumentParser>()
                 .AddSingleton<IRegexHelper, RegexHelper>()
-                //.AddSingleton<IRetryHelper, RetryHelper>()
-                .AddSingleton<IWebHelper, RestHelper>();
+                .AddSingleton<IWebHelper, RestHelper>()
+                .AddSingleton<IPageAnalisisData, PageAnalisisData>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
