@@ -21,12 +21,11 @@ namespace PageParser.Controllers {
         }
 
         [HttpPost]
-        public async Task<Dictionary<string, Dictionary<string, string>>> Post(PageAnalisisData page) {
+        public async Task<Dictionary<string, Dictionary<ResultItem, string>>> Post(PageAnalisisData page) {
             if (page.Domains.IsNullOrEmpty()) {
                 throw new ArgumentException("Domains's array is empty");
             }
-
-            Dictionary<string, Task<Dictionary<string, string>>> tasks = new Dictionary<string, Task<Dictionary<string, string>>>();
+            Dictionary<string, Task<Dictionary<ResultItem, string>>> tasks = new Dictionary<string, Task<Dictionary<ResultItem, string>>>();
 
             foreach (var domain in page.Domains.Distinct()) {
                 tasks.Add(domain, _reportCreater.PageParse(domain));

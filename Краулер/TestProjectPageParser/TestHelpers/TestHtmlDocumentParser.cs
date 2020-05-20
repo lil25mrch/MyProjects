@@ -6,8 +6,7 @@ namespace Tests {
     public class Test {
         [SetUp]
         public void Setup() { }
-
-        [Test]
+        
         [TestCase("http://www.a.ru", true)]
         [TestCase("http://www.a.ru/", true)]
         [TestCase("http://a.ru", true)]
