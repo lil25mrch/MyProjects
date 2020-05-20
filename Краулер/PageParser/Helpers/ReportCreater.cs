@@ -18,7 +18,7 @@ namespace PageParser.Helpers {
             _restHelper = restHelper;
         }
 
-        public async Task<Dictionary<string, string>> PageParse(string domain) {
+        public async Task<Dictionary<ResultItem, string>> PageParse(string domain) {
             if (!domain.StartsWith("http")) {
                 domain = Uri.UriSchemeHttp + Uri.SchemeDelimiter + domain;
             }
@@ -46,47 +46,42 @@ namespace PageParser.Helpers {
             List<string> listH4Header = _htmlDocumentParser.GetListSelectorWithAttribute("h4", "h4", parsedStartPage);
             List<string> listH5Header = _htmlDocumentParser.GetListSelectorWithAttribute("h5", "h5", parsedStartPage);
             List<string> listH6Header = _htmlDocumentParser.GetListSelectorWithAttribute("h6", "h6", parsedStartPage);
-            string instagramLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "instagram");
-            string twitterLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "twitter");
-            string facebookLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "facebook");
-            string youtubeLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "youtube");
-            string vkLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "vk");
-            string googleLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "google");
+            bool instagramLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "instagram");
+            bool twitterLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "twitter");
+            bool facebookLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "facebook");
+            bool youtubeLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "youtube");
+            bool vkLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "vk");
+            bool googleLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "google");
+            
+            bool isMainPage = _htmlDocumentParser.IsMainPage(domain);
+            var dictionary = new Dictionary<ResultItem, string>();
+            
+            dictionary.Add(ResultItem.ThisPageIsMain, isMainPage.ToString());
+            dictionary.Add(ResultItem.LinksCount, listLinks.Count.ToString());
+            dictionary.Add(ResultItem.InternalLinksCount, listInternalLinks.Count.ToString());
+            dictionary.Add(ResultItem.UniqueInternalLinksCount, uniqueInternalLinks.Count.ToString());
+            dictionary.Add(ResultItem.NorUniqueInternalLinksCount, nonUniqueInternalLinks.ToString());
+            dictionary.Add(ResultItem.InternalLinksHasImgAnchor, listInternalLinksWithImgAnchor.Count.ToString());
+            dictionary.Add(ResultItem.HtmlLangValue, htmlLangValue);
+            dictionary.Add(ResultItem.ImgSrcTagCount, imgSrcTagList.Count.ToString());
+            dictionary.Add(ResultItem.TitleTagCount, listTitles.Count.ToString());
+            dictionary.Add(ResultItem.AverageTitleTag, titleAverageLength.ToString());
+            dictionary.Add(ResultItem.StyleBackgroundImageInUrlCount, numberBackgroundImageWithUrl.ToString());
 
-            string isPageHome;
-            if (_htmlDocumentParser.IsMainPage(domain)) {
-                isPageHome = "main";
-            } else {
-                isPageHome = "start";
-            }
+            dictionary.Add(ResultItem.InstagramLinkExist, instagramLink.ToString());
+            dictionary.Add(ResultItem.TwitterLinkExist, twitterLink.ToString());
+            dictionary.Add(ResultItem.FacebookLinkExist, facebookLink.ToString());
+            dictionary.Add(ResultItem.YoutubeLinkExist, youtubeLink.ToString());
+            dictionary.Add(ResultItem.VkLinkExist, vkLink.ToString());
+            dictionary.Add(ResultItem.GoogleLinkExist, googleLink.ToString());
 
-            Dictionary<string, string> dictionary = new Dictionary<string, string>();
-            dictionary.Add("This page is ", isPageHome);
-            dictionary.Add("Number of all links per page: ", listLinks.Count.ToString());
-            dictionary.Add("Number of all internal links per page: ", listInternalLinks.Count.ToString());
-            dictionary.Add("Number of unique internal links per page: ", uniqueInternalLinks.Count.ToString());
-            dictionary.Add("Number of not unique internal links per page: ", nonUniqueInternalLinks.ToString());
-            dictionary.Add("The number of internal links which instead of the anchor <img> per page: ", listInternalLinksWithImgAnchor.Count.ToString());
-            dictionary.Add("The value of <html lang> is", htmlLangValue);
-            dictionary.Add("Number of <img src> tags per page: ", imgSrcTagList.Count.ToString());
-            dictionary.Add("Number of tags <title> per page: ", listTitles.Count.ToString());
-            dictionary.Add("The average length of the tag <title> value is: ", titleAverageLength.ToString());
-            dictionary.Add("Number of style <background-image: url> per page: ", numberBackgroundImageWithUrl.ToString());
+            dictionary.Add(ResultItem.H2HeaderCount, listH2Header.Count.ToString());
+            dictionary.Add(ResultItem.H3HeaderCount, listH3Header.Count.ToString());
+            dictionary.Add(ResultItem.H4HeaderCount, listH4Header.Count.ToString());
+            dictionary.Add(ResultItem.H5HeaderCount, listH5Header.Count.ToString());
+            dictionary.Add(ResultItem.H6HeaderCount, listH6Header.Count.ToString());
 
-            dictionary.Add("Link to the social network instagram ", instagramLink);
-            dictionary.Add("Link to the social network twitter ", twitterLink);
-            dictionary.Add("Link to the social network facebook ", facebookLink);
-            dictionary.Add("Link to the social network youtube", youtubeLink);
-            dictionary.Add("Link to the social network vk ", vkLink);
-            dictionary.Add("Link to the social network google ", googleLink);
-
-            dictionary.Add("Number of h2 headers per page: ", listH2Header.Count.ToString());
-            dictionary.Add("Number of h3 headers per page: ", listH3Header.Count.ToString());
-            dictionary.Add("Number of h4 headers per page: ", listH4Header.Count.ToString());
-            dictionary.Add("Number of h5 headers per page: ", listH5Header.Count.ToString());
-            dictionary.Add("Number of h6 headers per page: ", listH6Header.Count.ToString());
-
-            if (!_htmlDocumentParser.IsMainPage(domain)) {
+            if (!isMainPage) {
                 string contentMainPage = _restHelper.GetContent((uri.Scheme + "://" + uri.Host)).ToString();
                 HtmlParser xDocMain = new HtmlParser();
                 IHtmlDocument parsedMainPage = xDocMain.ParseDocument(contentMainPage);
@@ -127,17 +122,16 @@ namespace PageParser.Helpers {
                                                                     .ToList()
                                                                     .Count;
 
-                dictionary.Add("Number of all links per page, excluding matches to the home page: ", linksWithoutHomePage.ToString());
-                dictionary.Add("The number of internal links which instead of the anchor <img> per page, excluding matches to the home page: ",
-                               internalLinksWithImgAnchorWithoutHomePage.ToString());
-                dictionary.Add("Number of <img src> tags per page, excluding matches to the home page: ", imgSrcTagWithoutHomePage.ToString());
-                dictionary.Add("Number of <table> tags per page, excluding matches to the home page: ", tableWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.LinksCountWithoutMainPageMatches, linksWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.InternalLinksHasImgAnchorWithoutMainPageMatches, internalLinksWithImgAnchorWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.ImgSrcTagCountWithoutMainPageMatches, imgSrcTagWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.TableTagCountWithoutMainPageMatches, tableWithoutHomePage.ToString());
 
-                dictionary.Add("Number of h2 headers per page, excluding matches to the home page: ", h2HeaderWithoutHomePage.ToString());
-                dictionary.Add("Number of h3 headers per page, excluding matches to the home page: ", h3HeaderWithoutHomePage.ToString());
-                dictionary.Add("Number of h4 headers per page, excluding matches to the home page: ", h4HeaderWithoutHomePage.ToString());
-                dictionary.Add("Number of h5 headers per page, excluding matches to the home page: ", h5HeaderWithoutHomePage.ToString());
-                dictionary.Add("Number of h6 headers per page, excluding matches to the home page: ", h6HeaderWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.H2HeaderCountWithoutMainPageMatches, h2HeaderWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.H3HeaderCountWithoutMainPageMatches, h3HeaderWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.H4HeaderCountWithoutMainPageMatches, h4HeaderWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.H5HeaderCountWithoutMainPageMatches, h5HeaderWithoutHomePage.ToString());
+                dictionary.Add(ResultItem.H6HeaderCountWithoutMainPageMatches, h6HeaderWithoutHomePage.ToString());
             }
 
             return dictionary;
