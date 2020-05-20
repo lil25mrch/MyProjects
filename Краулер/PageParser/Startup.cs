@@ -1,12 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using PageParser.Helpers;
 using PageParser.Helpers.Interfaces;
 
@@ -24,13 +19,12 @@ namespace PageParser {
             services.AddSingleton<IReportCreater, ReportCreater>()
                 .AddSingleton<IHtmlDocumentParser, HtmlDocumentParser>()
                 .AddSingleton<IRegexHelper, RegexHelper>()
-                .AddSingleton<IRetryHelper, RetryHelper>()
+                //.AddSingleton<IRetryHelper, RetryHelper>()
                 .AddSingleton<IWebHelper, RestHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment en) {
-            
             app.UseMiddleware(typeof(ErrorHandlingMiddleware));
             app.UseMvc();
         }

@@ -7,7 +7,7 @@ using RestSharp;
 namespace PageParser.Helpers {
     public class RestHelper : IWebHelper {
         private static readonly RestClient _restClient = new RestClient();
-        private static readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(0, 10);
+        private static readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 10);
 
         public async Task<string> GetContent(string domain) {
             await _semaphoreSlim.WaitAsync();

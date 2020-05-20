@@ -24,9 +24,7 @@ namespace PageParser.Helpers {
             }
 
             Uri uri = new Uri(domain);
-
             string contentStartPage = await _restHelper.GetContent(domain);
-
             string uriHost = uri.Host;
             HtmlParser xDoc = new HtmlParser();
             IHtmlDocument parsedStartPage = xDoc.ParseDocument(contentStartPage);
@@ -52,10 +50,10 @@ namespace PageParser.Helpers {
             bool youtubeLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "youtube");
             bool vkLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "vk");
             bool googleLink = _htmlDocumentParser.PresenceSocialNetworkLink(listLinks, "google");
-            
+
             bool isMainPage = _htmlDocumentParser.IsMainPage(domain);
             var dictionary = new Dictionary<ResultItem, string>();
-            
+
             dictionary.Add(ResultItem.ThisPageIsMain, isMainPage.ToString());
             dictionary.Add(ResultItem.LinksCount, listLinks.Count.ToString());
             dictionary.Add(ResultItem.InternalLinksCount, listInternalLinks.Count.ToString());
@@ -67,14 +65,12 @@ namespace PageParser.Helpers {
             dictionary.Add(ResultItem.TitleTagCount, listTitles.Count.ToString());
             dictionary.Add(ResultItem.AverageTitleTag, titleAverageLength.ToString());
             dictionary.Add(ResultItem.StyleBackgroundImageInUrlCount, numberBackgroundImageWithUrl.ToString());
-
             dictionary.Add(ResultItem.InstagramLinkExist, instagramLink.ToString());
             dictionary.Add(ResultItem.TwitterLinkExist, twitterLink.ToString());
             dictionary.Add(ResultItem.FacebookLinkExist, facebookLink.ToString());
             dictionary.Add(ResultItem.YoutubeLinkExist, youtubeLink.ToString());
             dictionary.Add(ResultItem.VkLinkExist, vkLink.ToString());
             dictionary.Add(ResultItem.GoogleLinkExist, googleLink.ToString());
-
             dictionary.Add(ResultItem.H2HeaderCount, listH2Header.Count.ToString());
             dictionary.Add(ResultItem.H3HeaderCount, listH3Header.Count.ToString());
             dictionary.Add(ResultItem.H4HeaderCount, listH4Header.Count.ToString());
@@ -126,7 +122,6 @@ namespace PageParser.Helpers {
                 dictionary.Add(ResultItem.InternalLinksHasImgAnchorWithoutMainPageMatches, internalLinksWithImgAnchorWithoutHomePage.ToString());
                 dictionary.Add(ResultItem.ImgSrcTagCountWithoutMainPageMatches, imgSrcTagWithoutHomePage.ToString());
                 dictionary.Add(ResultItem.TableTagCountWithoutMainPageMatches, tableWithoutHomePage.ToString());
-
                 dictionary.Add(ResultItem.H2HeaderCountWithoutMainPageMatches, h2HeaderWithoutHomePage.ToString());
                 dictionary.Add(ResultItem.H3HeaderCountWithoutMainPageMatches, h3HeaderWithoutHomePage.ToString());
                 dictionary.Add(ResultItem.H4HeaderCountWithoutMainPageMatches, h4HeaderWithoutHomePage.ToString());

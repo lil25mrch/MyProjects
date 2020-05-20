@@ -2,7 +2,7 @@ using System;
 using NUnit.Framework;
 using PageParser.Helpers;
 
-namespace Tests {
+namespace TestProjectPageParser.TestHelpers {
     public class Test {
         [SetUp]
         public void Setup() { }
@@ -39,8 +39,7 @@ namespace Tests {
             // Assert
             Assert.AreEqual(result, b);
         }
-
-        [Test]
+        
         [TestCase("/b")]
         public void TestIsMainPageUriInvalid(string domain) {
             HtmlDocumentParser htmlDocumentParser = new HtmlDocumentParser();

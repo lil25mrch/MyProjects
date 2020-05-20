@@ -32,7 +32,7 @@ namespace PageParser.Controllers {
             }
 
             await Task.WhenAll(tasks.Values);
-            Dictionary<string, Dictionary<string, string>> result = tasks.ToDictionary(e => e.Key, e => e.Value.Result);
+            Dictionary<string, Dictionary<ResultItem, string>> result = tasks.ToDictionary(e => e.Key, e => e.Value.Result);
             _logger.Info($"Results for  {JsonConvert.SerializeObject(page)} is {JsonConvert.SerializeObject(result)}");
             return result;
         }
